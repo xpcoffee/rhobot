@@ -4,7 +4,7 @@ This is the code for a simple discord bot.
 
 ## Getting started
 
-Ensure you have [node]() installed.
+Ensure you have [node](https://nodejs.org/en/download/) installed.
 
 Clone the repository and run to pull the project dependencies:
 
