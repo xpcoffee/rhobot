@@ -30,6 +30,12 @@ const COMMANDS = {
         },
         help: "Show how long we've been in lockdown."
     },
+    about: {
+        run: message => {
+            message.channel.send("Source code can be found at https://github.com/xpcoffee/rhobot");
+        },
+        help: "Show info about ρbot."
+    },
     help: {
         run: message => {
             const helpText = Object.keys(COMMANDS).map(command => `**${command}** - ${COMMANDS[command].help}`).join("\r");
