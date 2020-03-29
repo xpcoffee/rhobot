@@ -1,0 +1,16 @@
+{
+  "name": "rhobot",
+  "version": "1.0.0",
+  "description": "Discord servant robot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Emerick Bosch",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^12.1.1",
+    "js-yaml": "^3.13.1",
+    "luxon": "^1.22.2"
+  }
+}
