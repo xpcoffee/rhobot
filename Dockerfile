@@ -8,6 +8,6 @@ COPY package*.json ./
 RUN npm install
 
 # Bundle application source code
-COPY ..
+COPY . .
 
 CMD ["node", "index.js"]
