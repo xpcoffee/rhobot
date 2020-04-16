@@ -1,5 +1,7 @@
 # ρbot
 
+![](https://codebuild.us-east-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoib0I3Znd0WGhPZjV3MkZzNUpBS3pQTFNtbFBoMlBUZmJVT3dGajhxK21KaCtqKzlES2grWjBJV1U5VGQ2Q2Y3V0tRMjkzeVhMYWhQZVdjT2dEMWdudjBZPSIsIml2UGFyYW1ldGVyU3BlYyI6IkxzNnhzcXBoVXRqa1JFMGkiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
+
 This is the code for a simple discord bot.
 
 ## Getting started
