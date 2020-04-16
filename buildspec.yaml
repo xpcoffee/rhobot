@@ -9,6 +9,8 @@ phases:
         commands:
             - docker build --output type=tar,dest=build/rhobot.tar .
             - echo "[STATUS] Validating contents of the build dir"
+            - pwd
+            - ls
             - ls build
     post_build:
         commands:
