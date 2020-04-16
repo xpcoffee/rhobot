@@ -8,6 +8,8 @@ phases:
     build:
         commands:
             - docker build -t rhobot -o build .
+            - echo "[STATUS] Validating contents of the build dir"
+            - ls build
     post_build:
         commands:
             - echo "[STATUS] Stopping build"
