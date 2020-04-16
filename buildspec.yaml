@@ -9,4 +9,5 @@ phases:
     post_build:
         - echo "[STATUS] Stopping build"
 artifacts:
-    - build/*
+    files:
+        - build/*
