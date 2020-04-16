@@ -7,7 +7,7 @@ phases:
             - mkdir build
     build:
         commands:
-            - docker build -t rhobot --output type=tar,dest=build/rhobot.tar .
+            - docker build --output type=tar,dest=build/rhobot.tar .
             - echo "[STATUS] Validating contents of the build dir"
             - ls build
     post_build:
