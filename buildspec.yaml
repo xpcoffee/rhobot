@@ -4,7 +4,6 @@ phases:
     pre_build:
         commands:
             - echo "[STATUS] Starting build"
-            - mkdir build
     build:
         commands:
             - docker build -t rhobot -o build .
