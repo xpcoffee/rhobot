@@ -2,12 +2,15 @@ version: 0.2
 
 phases:
     pre_build:
-        - echo "[STATUS] Starting build"
-        - mkdir build
+        commands:
+            - echo "[STATUS] Starting build"
+            - mkdir build
     build:
-        - docker build -t rhobot build
+        commands:
+            - docker build -t rhobot build
     post_build:
-        - echo "[STATUS] Stopping build"
+        commands:
+            - echo "[STATUS] Stopping build"
 artifacts:
     files:
         - build/*
