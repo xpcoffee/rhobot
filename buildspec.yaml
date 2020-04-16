@@ -7,7 +7,7 @@ phases:
             - mkdir build
     build:
         commands:
-            - docker build -t rhobot build
+            - docker build -t rhobot -o build .
     post_build:
         commands:
             - echo "[STATUS] Stopping build"
