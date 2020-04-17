@@ -1,12 +1,7 @@
 version: 0.0
 os: linux
-files:
-    - source: pull-docker-image
-      destination: /opt/rhobot/pull-docker-image
-    - source: application-start
-      destination: /opt/rhobot/application-start
 hooks:
     Install:
-        - location: /opt/rhobot/pull-docker-image
+        - location: pull-docker-image
     ApplicationStart:
-        - location: /opt/rhobot/application-start
+        - location: application-start
