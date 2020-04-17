@@ -19,3 +19,4 @@ artifacts:
     files:
         - pull-docker-image
         - application-start
+        - appspec.yaml
