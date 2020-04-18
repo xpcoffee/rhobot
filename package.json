@@ -4,7 +4,7 @@
   "description": "Discord servant robot",
   "main": "index.js",
   "scripts": {
-    "renderTemplates": "node renderTemplates.js",
+    "renderTemplates": "node build-scripts/renderTemplates.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Emerick Bosch",
