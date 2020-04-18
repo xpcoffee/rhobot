@@ -1,2 +1,2 @@
 #!/bin/bash
-docker run -d {{dockerImageTag}}
+docker run -d {{awsAccountId}}.dkr.ecr.{{region}}.amazonaws.com/{{dockerImageTag}}
