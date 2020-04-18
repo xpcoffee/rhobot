@@ -4,20 +4,20 @@ const path = require("path");
 const yaml = require("js-yaml");
 const DateTime = require("luxon").DateTime;
 
-// Add This YAML file with the token for the bot
-const CREDENTIAL_FILENAME = "creds.yaml";
-const tokenResponse = readTokenFromFile();
+(function runRhobot() {
+    const credentials = readCredentialsFile();
 
-if (tokenResponse.status === "error") {
-    console.error(`[ERROR] Unable to load the bot's token from ${CREDENTIAL_FILENAME}. Ensure you've added the file locally. Error: ` + tokenResponse.error);
-    process.exit(1);
-}
-const { token } = tokenResponse;
+    if (credentials.status === "error") {
+        console.error(`[ERROR] Unable to load the bot's token from ${CREDENTIAL_FILENAME}. Ensure you've added the file locally. Error: ` + credentials.error);
+        process.exit(1);
+    }
+    const { discordToken } = credentials;
 
-const bot = new Discord.Client();
-bot.on("message", extractAndRunCommand);
-bot.on("ready", () => console.log("Rhobot is running."))
-bot.login(token)
+    const bot = new Discord.Client();
+    bot.on("message", extractAndRunCommand);
+    bot.on("ready", () => console.log("Rhobot is running."));
+    bot.login(discordToken);
+})();
 
 /**
  * Parses a Discord message and triggers the appropriate command if the message contains a command.
@@ -77,12 +77,13 @@ const COMMANDS = {
 }
 
 /**
- * Attempts to read the Discord bot token from the credential YAML file.
+ * Attempts to read the credential YAML file.
  */
-function readTokenFromFile() {
+function readCredentialsFile() {
+    const CREDENTIAL_FILENAME = "creds.yaml";
     try {
         const doc = yaml.safeLoad(fs.readFileSync(path.join(".", CREDENTIAL_FILENAME), 'utf8'));
-        return { status: "success", token: doc.token }
+        return { status: "success", ...doc }
     } catch (e) {
         return { status: "error", error: e };
     }
