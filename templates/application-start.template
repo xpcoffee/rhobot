@@ -1,5 +1,28 @@
 #!/bin/bash
-echo "Logging in to ECR"
+
+if [ ! -z $(docker ps -q --filter name=rhobot) ]
+then
+    echo "[INFO] Instance of rhobot already running; killing the instance before continuing."
+    docker kill rhobot
+
+    for i in {1..5}
+    do 
+        if [ -z $(docker ps -q --filter name=rhobot) ]
+            then break
+            else echo "Container still running. Sleeping for 5 seconds." && sleep 5
+        fi
+    done
+
+    if [ ! -z $(docker ps -q --filter name=rhobot) ]
+        then echo "[ERROR] Unable to kill previous instance of rhobot. Exiting."
+        exit 1
+    fi
+else
+    echo "[INFO] No previous instance of rhobot found."
+fi
+
+echo "[INFO] Logging in to ECR..."
 $(aws ecr get-login --region {{region}} --no-include-email)
 
-docker run -d {{awsAccountId}}.dkr.ecr.{{region}}.amazonaws.com/{{dockerImageTag}}
+echo "[INFO] Launching a new instance of rhobot..."
+docker run --name rhobot -d {{awsAccountId}}.dkr.ecr.{{region}}.amazonaws.com/{{dockerImageTag}}
