@@ -18,7 +18,7 @@ Create a new `creds.yaml` file in the directory to hold the bot's token. To get 
 
 ```yaml
 # creds.yaml
-token: <the token>
+discordToken: <the token>
 ```
 
 To run the server, run the following from within the directory:
