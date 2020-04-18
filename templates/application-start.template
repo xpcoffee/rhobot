@@ -1,2 +1,5 @@
 #!/bin/bash
+echo "Logging in to ECR"
+$(aws ecr get-login --region {{region}} --no-include-email)
+
 docker run -d {{awsAccountId}}.dkr.ecr.{{region}}.amazonaws.com/{{dockerImageTag}}
