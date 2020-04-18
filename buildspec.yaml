@@ -5,6 +5,8 @@ phases:
         commands:
             - echo "[STATUS] Signing in to ECR"
             - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+            - echo "[STATUS] Installing npm dependencies"
+            - npm install --only=dev
     build:
         commands:
             - echo "[STATUS] Rendering template files"
