@@ -2,7 +2,7 @@ const Discord = require("discord.js");
 const fs = require("fs");
 const path = require("path");
 const yaml = require("js-yaml");
-const { extractAndRunCommand } = require("./commands");
+const { buildCommandHandler } = require("./commands");
 
 (function runRhobot() {
     const credentials = readCredentialsFile();
@@ -14,7 +14,7 @@ const { extractAndRunCommand } = require("./commands");
     const { discordToken } = credentials;
 
     const bot = new Discord.Client();
-    bot.on("message", extractAndRunCommand);
+    bot.on("message", buildCommandHandler(credentials));
     bot.on("ready", () => console.log("Rhobot is running."));
     bot.login(discordToken);
 })();
