@@ -52,10 +52,13 @@ function buildUserCommand(steamApiKey) {
 }
 
 function formatUserProfile(player) {
+    if (!player) {
+        return `Unable to find user`;
+    }
     return `Found Steam user: **${player.personaname}**
     **Profile**: ${player.profileurl}
     **Steam ID:** ${player.steamid}
-    **Last online:** ${DateTime.fromSeconds(player.lastlogoff).toISO()}
+    **Last online:** ${player.lastlogoff && DateTime.fromSeconds(player.lastlogoff).toISO()}
     **Country code:** ${player.loccountrycode}
     **Name:** ${player.realname}`
 }
