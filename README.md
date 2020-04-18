@@ -24,5 +24,5 @@ discordToken: <the token>
 To run the server, run the following from within the directory:
 
 ```bash
-node .
+node src/
 ```
