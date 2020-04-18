@@ -3,5 +3,7 @@ os: linux
 hooks:
     Install:
         - location: pull-docker-image
+          run-as: ec2user
     ApplicationStart:
         - location: application-start
+          run-as: ec2user

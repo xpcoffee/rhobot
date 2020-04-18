@@ -4,12 +4,14 @@
   "description": "Discord servant robot",
   "main": "index.js",
   "scripts": {
+    "renderTemplates": "node renderTemplates.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Emerick Bosch",
   "license": "MIT",
   "dependencies": {
     "discord.js": "^12.1.1",
+    "handlebars": "^4.7.6",
     "js-yaml": "^3.13.1",
     "luxon": "^1.22.2"
   }
