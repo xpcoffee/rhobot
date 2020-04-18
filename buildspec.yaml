@@ -9,9 +9,9 @@ phases:
             - npm install --only=dev
     build:
         commands:
+            - export DOCKER_IMAGE_TAG="rhobot:$(git rev-parse HEAD)"
             - echo "[STATUS] Rendering template files"
             - npm run renderTemplates
-            - export DOCKER_IMAGE_TAG="rhobot:$(git rev-parse HEAD)"
             - echo "[STATUS] Building Docker image for ${IMAGE_TAG}"
             - docker build -t "${IMAGE_TAG}" .
             - docker tag "${IMAGE_TAG}" "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_TAG}"
