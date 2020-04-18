@@ -9,7 +9,7 @@ phases:
             - npm install --only=dev
     build:
         commands:
-            - export DOCKER_IMAGE_TAG="rhobot:$(git rev-parse HEAD)"
+            - export DOCKER_IMAGE_TAG="rhobot:$(CODEBUILD_RESOLVED_SOURCE_VERSION)"
             - echo "[STATUS] Rendering template files"
             - npm run renderTemplates
             - echo "[STATUS] Building Docker image for ${DOCKER_IMAGE_TAG}"

@@ -49,7 +49,6 @@ function renderTemplate(filename) {
     const TEMPLATE_DIRECTORY = "templates";
     try {
         const content = fs.readFileSync(path.join(TEMPLATE_DIRECTORY, filename), "utf8");
-        console.log(config);
         const renderedContent = Handlebars.compile(content)(config);
         const renderedFilename = stripTemplateSuffix(filename);
         fs.writeFileSync(renderedFilename, renderedContent);
