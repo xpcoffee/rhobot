@@ -42,6 +42,7 @@ function getTemplateFiles() {
     return [
         "pull-docker-image.template",
         "creds.yaml.template",
+        "application-start.template"
     ];
 }
 
