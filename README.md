@@ -6,28 +6,35 @@ This is the code for a simple discord bot.
 
 ## Getting started
 
-Ensure you have [node](https://nodejs.org/en/download/) installed.
+1) **Install [node](https://nodejs.org/en/download/)** if you haven't already.
 
-Clone the repository and run to pull the project dependencies:
+2) **Clone this repository and pull the project dependencies:**
 
 ```bash
+# in the root directory
 npm install
 ```
 
-Create a new `creds.yaml` file in the directory to hold the bot's token. To get the token either [reach out to me](https://github.com/xpcoffee) or [set up your own Discord bot account](https://discordapp.com/developers/applications).
-
+3) **Create a new `creds.yaml` file** in the root directory to hold the bot's credentials.
 ```yaml
 # creds.yaml
 discordToken: <the token>
 steamApiKey: <the token>
 ```
+<dl>
+<dt><code>discordToken</code></dt>
+<dd>The bot ClientKey. Get it by <a href="https://discordapp.com/developers/applications">setting up a Discord application and adding a bot</a>.</dd>
+<dt><code>steamApiKey</code></dt>
+<dd>Steam API Key; get it by <a href="https://steamcommunity.com/dev">setting up an account and registering for an API key in the SteamCommunity</a>.</dd>
+</dl>
 
-To run the server, run the following from within the directory:
 
+4) **To run the server**, run the following from within the directory:
 ```bash
 node src/
 ```
 
-## How it works
+## Additional info
 
-Discord bots: https://xpcoffee.github.io/discord-bot
+Wiki: https://github.com/xpcoffee/rhobot/wiki
+Overview on how Discord bots work: https://xpcoffee.github.io/discord-bot
