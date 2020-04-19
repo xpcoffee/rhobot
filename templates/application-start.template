@@ -3,6 +3,7 @@
 if [ ! -z $(docker ps -q --filter name=rhobot) ]
 then
     echo "[INFO] Instance of rhobot already running; killing the instance before continuing."
+    docker stop rhobot
     docker rm rhobot
 
     for i in {1..5}
