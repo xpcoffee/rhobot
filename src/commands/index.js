@@ -39,7 +39,11 @@ function buildCommandHandler(credentials) {
             }
         };
 
-        (COMMANDS[command] || unknownCommand).run(message, params);
+        try {
+            (COMMANDS[command] || unknownCommand).run(message, params);
+        } catch (e) {
+            message.reply("[ERROR] Something went wrong with your command. Reach out to the bot admin if these errors continue.")
+        }
     }
 }
 

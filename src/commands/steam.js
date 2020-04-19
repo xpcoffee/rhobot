@@ -37,30 +37,65 @@ function buildCommands(steamApiKey) {
 }
 
 function buildUserCommand(steamApiKey) {
+    async function resolveVanityURL(vanityName) {
+        const { response } = await fetch(`http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${steamApiKey}&vanityurl=${vanityName}`)
+            .then(res => res.json());
+
+        return response && response.steamid
+            ? { type: "success", steamId: response.steamid }
+            : { type: "failure", msg: `Unable to resolve a SteamId for vanity name ${vanityName}` };
+    }
+
+    async function getPlayerSummary(steamId) {
+        const { response } = await fetch(`http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${steamApiKey}&steamids=${steamId}`)
+            .then(res => res.json());
+
+        return response && response.players && response.players.length
+            ? { type: "success", playerSummary: response.players[0] }
+            : { type: "failure", msg: `Unable to get player summary for SteamId ${steamId}` };
+    }
+
+    async function getSteamUser(identifier) {
+        let steamId;
+
+        if (identifier.length === 17 && Number.parseInt(identifier) !== NaN) {
+            steamId = identifier; // strings of 17 digits are SUPER likely to be a steam ID
+        }
+
+        if (steamId === undefined) {
+            const resolveResp = await resolveVanityURL(identifier);
+            if (resolveResp.type === "failure") {
+                return resolveResp.msg;
+            }
+            steamId = resolveResp.steamId;
+        }
+
+        const playerSummaryResp = await getPlayerSummary(steamId);
+        if (playerSummaryResp.type === "failure") {
+            return playerSummaryResp.msg;
+        }
+
+        return formatPlayerSummary(playerSummaryResp.playerSummary);
+    }
+
     return {
         run: (message, parameters) => {
-            fetch(`http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${steamApiKey}&vanityurl=${parameters.join(",")}`)
-                .then(res => res.json())
-                .then(({ response }) => {
-                    fetch(`http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${steamApiKey}&steamids=${response.steamid}`)
-                        .then(res => res.json())
-                        .then(json => message.channel.send(formatUserProfile(json.response.players[0])));
-                });
+            getSteamUser(parameters[0]).then(result => {
+                message.channel.send(result);
+            })
         },
-        help: "Show a steam user's profile."
+        help: "Show information on a steam user."
     };
 }
 
-function formatUserProfile(player) {
-    if (!player) {
-        return `Unable to find user`;
-    }
-    return `Found Steam user: **${player.personaname}**
-    **Profile**: ${player.profileurl}
-    **Steam ID:** ${player.steamid}
-    **Last online:** ${player.lastlogoff && DateTime.fromSeconds(player.lastlogoff).toISO()}
-    **Country code:** ${player.loccountrycode}
-    **Name:** ${player.realname}`
+
+function formatPlayerSummary(playerSummary) {
+    return `Found Steam user: **${playerSummary.personaname || "Unknown"}**
+    **Profile**: ${playerSummary.profileurl || "Unknown"}
+    **Steam ID:** ${playerSummary.steamid || "Unknown"}
+    **Last online:** ${playerSummary.lastlogoff && DateTime.fromSeconds(playerSummary.lastlogoff).toISO() || "Unknown"}
+    **Country code:** ${playerSummary.loccountrycode || "Unknown"}
+    **Name:** ${playerSummary.realname || "Unknown"}`
 }
 
 
