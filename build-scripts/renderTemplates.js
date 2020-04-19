@@ -12,7 +12,8 @@ function getConfig() {
         discordToken: "DISCORD_TOKEN",
         awsAccountId: "AWS_ACCOUNT_ID",
         region: "AWS_DEFAULT_REGION",
-        dockerImageTag: "DOCKER_IMAGE_TAG"
+        dockerImageTag: "DOCKER_IMAGE_TAG",
+        steamApiKey: "STEAM_API_KEY"
     };
 
     (function assertExpectedEnvironementVariables() {
