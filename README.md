@@ -19,6 +19,7 @@ Create a new `creds.yaml` file in the directory to hold the bot's token. To get 
 ```yaml
 # creds.yaml
 discordToken: <the token>
+steamApiKey: <the token>
 ```
 
 To run the server, run the following from within the directory:
@@ -26,3 +27,7 @@ To run the server, run the following from within the directory:
 ```bash
 node src/
 ```
+
+## How it works
+
+Discord bots: https://xpcoffee.github.io/discord-bot
