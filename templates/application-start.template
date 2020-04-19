@@ -10,7 +10,7 @@ then
     do 
         if [ -z $(docker ps -q --filter name=rhobot) ]
             then break
-            else echo "Container still running. Sleeping for 5 seconds." && sleep 5
+            else echo "[INFO] Container still running. Sleeping for 5 seconds." && sleep 5
         fi
     done
 
