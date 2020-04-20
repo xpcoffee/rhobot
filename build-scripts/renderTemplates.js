@@ -13,7 +13,9 @@ function getConfig() {
         awsAccountId: "AWS_ACCOUNT_ID",
         region: "AWS_DEFAULT_REGION",
         dockerImageTag: "DOCKER_IMAGE_TAG",
-        steamApiKey: "STEAM_API_KEY"
+        steamApiKey: "STEAM_API_KEY",
+        battlenetClientKey: "BATTLENET_CLIENT_KEY",
+        battlenetClientSecret: "BATTLENET_CLIENT_SECRET"
     };
 
     (function assertExpectedEnvironementVariables() {

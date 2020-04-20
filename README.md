@@ -19,13 +19,17 @@ npm install
 ```yaml
 # creds.yaml
 discordToken: <the token>
-steamApiKey: <the token>
+steamApiKey: <the key>
+battlenetClientKey: <the key>
+battlenetClientSecret: <the secret>
 ```
 <dl>
 <dt><code>discordToken</code></dt>
 <dd>The bot ClientKey. Get it by <a href="https://discordapp.com/developers/applications">setting up a Discord application and adding a bot</a>.</dd>
 <dt><code>steamApiKey</code></dt>
 <dd>Steam API Key; get it by <a href="https://steamcommunity.com/dev">setting up an account and registering for an API key in the SteamCommunity</a>.</dd>
+<dt><code>battlenetClientKey</code> and <code>battlenetClientSecret</code></dt>
+<dd><a href="https://develop.battle.net/documentation/guides/getting-started">BattleNet API credentials.</a> Get them by <a href="https://develop.battle.net/access">setting up a BattleNet dev account.</a></dd>
 </dl>
 
 
