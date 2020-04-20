@@ -25,7 +25,7 @@ battlenetClientSecret: <the secret>
 ```
 <dl>
 <dt><code>discordToken</code></dt>
-<dd>The bot ClientKey. Get it by <a href="https://discordapp.com/developers/applications">setting up a Discord application and adding a bot</a>.</dd>
+<dd>The Discord bot ClientKey. Get it by <a href="https://discordapp.com/developers/applications">setting up a Discord application and adding a bot</a>.</dd>
 <dt><code>steamApiKey</code></dt>
 <dd>Steam API Key; get it by <a href="https://steamcommunity.com/dev">setting up an account and registering for an API key in the SteamCommunity</a>.</dd>
 <dt><code>battlenetClientKey</code> and <code>battlenetClientSecret</code></dt>
