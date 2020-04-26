@@ -28,7 +28,7 @@ const buildCommand = (prefix, name, helpText, commands) => {
 
             (commands[command] || unknownCommand).run(message, params);
         },
-        help: `${helpText}}`
+        help: `${helpText}`
     };
 }
 

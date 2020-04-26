@@ -2,13 +2,14 @@ const greetCommand = require("./greet");
 const lockdownCommand = require("./lockdown");
 const aboutCommand = require("./about");
 const buildSteamCommand = require("./steam");
+const buildSc2Command = require("./starcraft2");
 
 /**
  * Parses a Discord message and triggers the appropriate command if the message contains a command.
  * @param {Message} The Discord message 
  */
 function buildCommandHandler(credentials) {
-    const { steamApiKey } = credentials;
+    const { steamApiKey, battlenetClientKey, battlenetClientSecret } = credentials;
 
     const helpCommand = {
         run: message => {
@@ -24,6 +25,7 @@ function buildCommandHandler(credentials) {
         lockdown: lockdownCommand,
         about: aboutCommand,
         steam: buildSteamCommand(COMMAND_PREFIX, steamApiKey),
+        sc2: buildSc2Command(COMMAND_PREFIX, battlenetClientKey, battlenetClientSecret),
         help: helpCommand,
     }
 
