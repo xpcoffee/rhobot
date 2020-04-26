@@ -131,7 +131,6 @@ const REALMS = ["1", "2"];
 
 function parseParameters(parameters, requiredParams) {
     const result = { errors: [] };
-    console.log(parameters);
 
     while (parameters.length) {
         const option = parameters.shift();
