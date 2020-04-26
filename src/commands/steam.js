@@ -12,7 +12,7 @@ const buildCommand = (prefix, steamApiKey) => {
     const commands = {
         user: buildUserCommand(steamApiKey),
     };
-    return buildNestedCommand(prefix, "steam", "Surface infromation from Steam", commands);
+    return buildNestedCommand(prefix, "steam", "Surface Steam information.", commands);
 }
 
 /**
