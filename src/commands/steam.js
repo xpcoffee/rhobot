@@ -1,41 +1,25 @@
 const fetch = require("node-fetch");
 const DateTime = require("luxon").DateTime;
+const buildNestedCommand = require("./nestedCommand");
 
-// Returns recent steam activity for the user
-const buildCommand = (steamApiKey) => {
-    return {
-        run: (message, parameters) => {
-            const [command, ...params] = parameters;
-
-            const unknownCommand = {
-                run: () => {
-                    message.reply(`Unknown steam subcommand '${command}'. Type 'steam help' for a list of available commands.`)
-                }
-            };
-
-            (buildCommands(steamApiKey)[command] || unknownCommand).run(message, params);
-        },
-        help: "Show how long we've been in lockdown."
-    };
-}
-
-function buildCommands(steamApiKey) {
-    const helpCommand = {
-        run: message => {
-            const helpText = Object.keys(COMMANDS).map(command => `**${command}** - ${COMMANDS[command].help}`).join("\r");
-            message.channel.send("Here's a list of available steam subcommands:\r\r" + helpText);
-        },
-        help: "This command."
-    };
-
-    const COMMANDS = {
+/**
+ * Builds the nested Steam command.
+ * 
+ * @param {string} prefix - The command string prefix that a user needs to type before this one.
+ * @param {string} steamApiKey - The API key needed to call the Steam API.
+ */
+const buildCommand = (prefix, steamApiKey) => {
+    const commands = {
         user: buildUserCommand(steamApiKey),
-        help: helpCommand
-    }
-
-    return COMMANDS;
+    };
+    return buildNestedCommand(prefix, "steam", "Surface infromation from Steam", commands);
 }
 
+/**
+ * Returns information on a Steam user. Can resolve either the 17-digit SteamId or the users's vanity name.
+ * 
+ * @param {string} steamApiKey - The API key needed to call the Steam API.
+ */
 function buildUserCommand(steamApiKey) {
     async function resolveVanityURL(vanityName) {
         const { response } = await fetch(`http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${steamApiKey}&vanityurl=${vanityName}`)
@@ -89,6 +73,11 @@ function buildUserCommand(steamApiKey) {
 }
 
 
+/**
+ * Return a markdown formatted string containing a Steam user's information.
+ * 
+ * @param {Object} playerSummary - The player summary object returned from the API.
+ */
 function formatPlayerSummary(playerSummary) {
     return `Found Steam user: **${playerSummary.personaname || "Unknown"}**
     **Profile**: ${playerSummary.profileurl || "Unknown"}
