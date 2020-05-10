@@ -40,5 +40,5 @@ node src/
 
 ## Additional info
 
-Wiki: https://github.com/xpcoffee/rhobot/wiki
-Overview on how Discord bots work: https://xpcoffee.github.io/discord-bot
+- [Rhobot Wiki](https://github.com/xpcoffee/rhobot/wiki)
+- [Overview on how Discord bots work](https://xpcoffee.github.io/discord-bot)
