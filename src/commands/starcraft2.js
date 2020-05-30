@@ -14,7 +14,6 @@ const buildCommand = (prefix, battlenetClientKey, battlenetClientSecret) => {
     const authenticate = BattleNet.prepareAuthentication(battlenetClientKey, battlenetClientSecret);
     const commands = {
         "season": buildSeasonCommand(authenticate),
-        "ladder-summary": buildLadderSummaryCommand(authenticate),
     };
     return buildNestedCommand(prefix, "sc2", "Surface Starcraft II information.", commands);
 }
@@ -63,56 +62,6 @@ async function getSeason(credentials, region) {
 }
 
 /**
- * Return a ladder summary for a player.
- * [TODO]: need to integrate OAuth into bot. profileId isn't easy to find without it.
- */
-function buildLadderSummaryCommand(authenticate) {
-    return {
-        run: (message, parameters) => {
-            prepareStarcraftParameters(parameters, ["--region", "--profile-id"], authenticate)
-                .then(result => {
-                    if (result.type !== "success") {
-                        message.channel.send(result.msg)
-                        return;
-                    }
-                    const { authenticationResult, region, profileId } = result;
-
-                    getProfileLadderSummary(authenticationResult, region, profileId)
-                        .then(result => {
-                            message.channel.send(result.type === "error" ? result.msg : result)
-                        })
-                });
-        },
-        help: "Show ladder summary for a given user."
-    };
-}
-
-async function getProfileLadderSummary(credentials, region, profileId) {
-    return Promise.all(
-        REALMS.map(realm => {
-            return fetch(getProfileURL(region, realm, profileId) + "/ladder/summary?access_token=${credentials.access_token}")
-        })
-    ).then(responses => {
-        const success = responses.find(res => res.status === 200);
-        if (success) {
-            return success.json();
-        }
-
-        const notFound = responses.filter(res => res.status === 404).length === responses.length;
-        if (notFound) {
-            return Promise.resolve({ type: "error", msg: `Ladder summary not found for '--region ${region}' and '--profile-id ${profileId}'` });
-        }
-
-        console.error("Unable to fetch ladder summary: " + responses.map(res => `${res.status} ${res.statusText}`).join(", "));
-        return Promise.reject({ type: "error", msg: "Unable to fetch ladder summary. Contact the bot maintainer if issues persist." });
-    });
-}
-
-function getProfileURL(region, realm, profileId) {
-    return `https://${region}.api.blizzard.com/sc2/profile/${REGIONS[region].regionId}/${realm}/${profileId}`
-}
-
-/**
  * The regions also have numbers. Why, I don't know...
  * https://develop.battle.net/documentation/starcraft-2/community-apis
  */
@@ -124,11 +73,7 @@ const REGIONS = {
     cn: { regionId: "5" },
 }
 
-/**
- * Profile data lives in one of many "realms"
- */
-const REALMS = ["1", "2"];
-
+// TODO: this feels clunky - need to rethink paramater validation for subcommands
 function parseParameters(parameters, requiredParams) {
     const result = { errors: [] };
 
@@ -138,17 +83,10 @@ function parseParameters(parameters, requiredParams) {
             case "--region":
                 result.region = parameters.shift();
                 break;
-            case "--profile-id":
-                result.profileId = parameters.shift();
-                break;
             default:
                 result.errors.push(`Unrecognized option: ${option}`)
                 break;
         }
-    }
-
-    if (requiredParams.includes("--profile-id") && result.profileId === undefined) {
-        result.errors.push(`'--profile-id' must be specified`);
     }
 
     if (requiredParams.includes("--region") && result.region === undefined || !Object.keys(REGIONS).includes(result.region)) {
