@@ -1,4 +1,3 @@
-const greetCommand = require("./greet");
 const lockdownCommand = require("./lockdown");
 const aboutCommand = require("./about");
 const buildSteamCommand = require("./steam");
@@ -21,7 +20,6 @@ function buildCommandHandler(credentials) {
 
     const COMMAND_PREFIX = "!";
     const COMMANDS = {
-        greet: greetCommand,
         lockdown: lockdownCommand,
         about: aboutCommand,
         steam: buildSteamCommand(COMMAND_PREFIX, steamApiKey),
