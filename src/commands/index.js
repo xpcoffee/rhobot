@@ -2,6 +2,7 @@ const lockdownCommand = require("./lockdown");
 const aboutCommand = require("./about");
 const buildSteamCommand = require("./steam");
 const buildSc2Command = require("./starcraft2");
+const buildEventCommand = require("./event");
 const Discord = require('discord.js');
 
 /**
@@ -29,6 +30,7 @@ function buildCommandHandler(appConfig) {
         about: aboutCommand,
         steam: buildSteamCommand(COMMAND_PREFIX, steamApiKey),
         sc2: buildSc2Command(COMMAND_PREFIX, battlenetClientKey, battlenetClientSecret),
+        event: buildEventCommand(COMMAND_PREFIX, dynamodbTable, dynamodbRegion),
         help: helpCommand,
     }
 
