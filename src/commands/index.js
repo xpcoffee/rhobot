@@ -2,6 +2,7 @@ const lockdownCommand = require("./lockdown");
 const aboutCommand = require("./about");
 const buildSteamCommand = require("./steam");
 const buildSc2Command = require("./starcraft2");
+const Discord = require('discord.js');
 
 /**
  * Parses a Discord message and triggers the appropriate command if the message contains a command.
@@ -12,8 +13,12 @@ function buildCommandHandler(appConfig) {
 
     const helpCommand = {
         run: message => {
-            const helpText = Object.keys(COMMANDS).map(command => `**${command}** - ${COMMANDS[command].help}`).join("\r");
-            message.channel.send("Trigger commands using **!command**. Here's a list of available commands:\r\r" + helpText);
+            const embed = new Discord.MessageEmbed()
+                .setTitle('ρbot commands')
+                .setFooter('Get help on subcommands by running ![command] help');
+
+            Object.keys(COMMANDS).map(command => embed.addField(`${COMMAND_PREFIX}${command}`, COMMANDS[command].help));
+            message.channel.send(embed);
         },
         help: "This command."
     };

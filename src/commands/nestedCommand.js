@@ -1,3 +1,5 @@
+const Discord = require('discord.js');
+
 /**
  * Builds the root command for complex subcommands.
  * 
@@ -9,8 +11,12 @@
 const buildCommand = (prefix, name, helpText, commands) => {
     const helpCommand = {
         run: message => {
-            const subcommands = Object.keys(commands).map(command => `**${command}** - ${commands[command].help}`).join("\r");
-            message.channel.send(`${helpText}\r\rAvailable subcommands:\r\r` + subcommands);
+            const embed = new Discord.MessageEmbed()
+                .setTitle(`${prefix}${name}`)
+                .setDescription(helpText)
+
+            Object.keys(commands).map(command => embed.addField(`${prefix}${name} ${command}`, commands[command].help));
+            message.channel.send(embed);
         },
         help: "This command."
     };
@@ -18,7 +24,8 @@ const buildCommand = (prefix, name, helpText, commands) => {
 
     return {
         run: (message, parameters) => {
-            const [command, ...params] = parameters;
+            const [maybeCommand, ...params] = parameters;
+            const command = maybeCommand || 'help';
 
             const unknownCommand = {
                 run: () => {
