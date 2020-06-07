@@ -1,4 +1,4 @@
-creds.yaml
+app-config.yaml
 pull-docker-image
 application-start
 node_modules
