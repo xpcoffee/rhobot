@@ -1,8 +1,12 @@
 const AWS = require('aws-sdk');
 
-/**
- * Get functions with which to interact with a table.
- * 
+class RhobotDynamoDB {
+    dynamodb;
+    table;
+
+    /**
+     * Thin wrapper around the DynamoDB client that knows about the Rhobot table format.
+     * 
      * The DynamoDB table structure has a super generic format:
      *  - primary key: a combination of channel and type-identifier
      *  - sort key: a uuid
@@ -13,12 +17,14 @@ const AWS = require('aws-sdk');
      * Access pattern for multiple items is expected to be for items in the same type (e.g. listing all events).
      * Access patterns along user lines are not expected, so keying on user isn't required for every item.
      * 
- * 
- * @param {string} table - The DynamoDB table to interact with.
- * @param {string} region - The AWS region the table is in.
- */
-function configure(table, region) {
-    const dynamodb = new AWS.DynamoDB({ region });
+     * 
+     * @param {string} table - The DynamoDB table to interact with.
+     * @param {string} region - The AWS region the table is in.
+     */
+    constructor(table, region) {
+        this.dynamodb = new AWS.DynamoDB({ region });
+        this.table = table;
+    }
 
     /**
      * Get all records of a type.
@@ -26,10 +32,10 @@ function configure(table, region) {
      * @param {string} channel - the Discord channel ID
      * @param {string} type - the database record type
      */
-    function readType(channel, type) {
+    readType(channel, type) {
         const primaryKey = getPartitionKey(channel, type);
         const params = {
-            TableName: table,
+            TableName: this.table,
             ExpressionAttributeValues: {
                 ":type": {
                     S: `${primaryKey}`
@@ -38,7 +44,7 @@ function configure(table, region) {
             KeyConditionExpression: `type = :type`,
         };
 
-        return dynamodb.query(params, (err, data) => {
+        return this.dynamodb.query(params, (err, data) => {
             if (err) reject(err);
             else resolve(data);
         }).promise();
@@ -47,18 +53,20 @@ function configure(table, region) {
     /**
      * Get a single record.
      * 
-     * @param {string} identifier - the database record ID
+     * @param {string} channel - the discord channel ID
+     * @param {string} type - the database record type
+     * @param {string} id - the record id
      */
-    function readItem(channel, type, attributes) {
+    readItem(channel, type, id) {
         const params = {
-            TableName: table,
+            TableName: this.table,
             Key: {
-                ...getPartitionKeyAttribute(channel, type),
-                uuid: attributes.uuid,
+                ...RhobotDynamoDB.getPartitionKeyAttribute(channel, type),
+                uuid: { S: id },
             },
         };
 
-        return dynamodb.getItem(params).promise();
+        return this.dynamodb.getItem(params).promise();
     }
 
     /**
@@ -67,28 +75,22 @@ function configure(table, region) {
      * @param {string} identifier - the database record ID
      * @param {AWS.DynamoDB.PutItemInputAttributeMap} attributes - non-key DynamoDB item attributes
      */
-    function put(channel, type, attributes) {
+    put(channel, type, attributes) {
         const ddbItem = {
-            ...getPartitionKeyAttribute(channel, type),
+            ...RhobotDynamoDB.getPartitionKeyAttribute(channel, type),
             ...attributes
         };
 
-        return dynamodb.putItem({ TableName: table, Item: ddbItem }).promise();
+        return this.dynamodb.putItem({ TableName: this.table, Item: ddbItem }).promise();
     }
 
-    function getPartitionKeyAttribute(channel, type) {
+    static getPartitionKeyAttribute(channel, type) {
         return {
             "type": {
                 "S": `${channel}${type}`
             },
         }
     }
-
-    return {
-        put,
-        readItem,
-        readType
-    };
 }
 
-module.exports = { configure };
+module.exports = { RhobotDynamoDB };

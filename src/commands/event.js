@@ -1,28 +1,33 @@
 const buildNestedCommand = require("./nestedCommand");
-const { configure: configureDynamoDB } = require("./dynamodb");
+const RhobotDynamoDB = require("./dynamodb").RhobotDynamoDB;
 const Discord = require('discord.js');
 const DateTime = require('luxon').DateTime;
 
-const DATABASE_ITEM_TYPE = "event";
 
 /**
  * Builds the Event command.
  * 
  * This allows users to create events, which other users can sign up for.
  * 
- * @param {string} prefix - The command string prefix that a user needs to type before this one.
- * @param {string} steamApiKey - The API key needed to call the Steam API.
+ * @param {string} prefix - the command prefix (everything that comes before this command)
+ * @param {string} ddbTable - the DynamoDB table that stores events
+ * @param {string} ddbRegion - the AWS region in which the DynamoDB table resides
  */
 const buildCommand = (prefix, ddbTable, ddbRegion) => {
-    const ddb = configureDynamoDB(ddbTable, ddbRegion);
+    const dao = new EventDao(ddbTable, ddbRegion);
 
     const commands = {
-        create: buildCreateCommand(ddb),
+        create: buildCreateCommand(dao),
     };
     return buildNestedCommand(prefix, "event", "Create and manage events.", commands);
 }
 
-function buildCreateCommand(ddb) {
+/**
+ * Command that can create a new event.
+ * 
+ * @param {EventDao} dao - an instance of Event DAO
+ */
+function buildCreateCommand(dao) {
     return {
         run: (message, parameters) => {
             const { errors, title, startTime, maxParticipants } = parseCreateEventParams(parameters);
@@ -31,11 +36,10 @@ function buildCreateCommand(ddb) {
                 return;
             }
 
-
             // Use the message's ID as the uuid - this helps makes messages idempodent if there's more than one bot listening (e.g. testing bot);
             const uuid = message.id;
             const channelId = message.channel.id;
-            const event = getEvent({
+            const event = new Event({
                 id: uuid,
                 title,
                 startTime,
@@ -44,105 +48,20 @@ function buildCreateCommand(ddb) {
                 created: DateTime.utc().toISO()
             });
 
-            const attributes = eventToAttributes(event);
 
-            ddb.put(channelId, DATABASE_ITEM_TYPE, attributes)
-                .then(() => message.channel.send(formatLoadingEvent(event)))
-                .then(eventMessage => {
-                    ddb.readItem(channelId, DATABASE_ITEM_TYPE, attributes)
-                        .then(res => {
-                            const embed = formatEvent(attributesToEvent(res.Item));
-                            eventMessage.edit(embed);
-                        })
-                })
+            dao.updateEvent(channelId, event)
+                .then(() => message.channel.send(event.formatLoading()))
+                .then(
+                    function updateMessageWithEventDetails(message) {
+                        dao.readEvent(channelId, event.id)
+                            .then(event => { message.edit(event.format()) })
+                            .catch(error => message.edit("Issue reading event " + event.id + ": " + error));
+                    }
+                )
                 .catch(reason => message.reply('[ERROR] Unable to create new event:' + reason));
         },
         help: "Create a new event."
     };
-}
-
-function getEvent({ id, title, startTime, createdBy, created, maxParticipants }) {
-    const event = {
-        id,
-        title,
-        startTime,
-        createdBy,
-        created
-    }
-
-    if (maxParticipants) {
-        event.maxParticipants = maxParticipants;
-    };
-
-    return event;
-}
-
-function eventToAttributes({ id, title, startTime, createdBy, created, maxParticipants }) {
-    const attributes = {
-        "uuid": { S: id },
-        "Title": { S: title },
-        "StartTime": { S: startTime },
-        "CreatedBy": { S: createdBy },
-        "Created": { S: created }
-    };
-
-    if (maxParticipants) {
-        attributes["MaxParticipants"] = { N: maxParticipants };
-    };
-
-    return attributes;
-}
-
-function attributesToEvent({ uuid, Title, StartTime, CreatedBy, Created, MaxParticipants }) {
-    const event = {
-        id: uuid.S,
-        title: Title.S,
-        startTime: StartTime.S,
-        createdBy: CreatedBy.S,
-        created: Created.S
-    };
-
-    if (MaxParticipants) {
-        event.maxParticipants = MaxParticipants.N;
-    }
-
-    return event;
-}
-
-function formatLoadingEvent({ id, title }) {
-    const embed = new Discord.MessageEmbed()
-        .setTitle(title)
-        .setDescription(id)
-        .setFooter("Loading event...");
-    return embed;
-}
-
-function formatEvent({ id, title, startTime, createdBy, created, maxParticipants }) {
-    try {
-        const embed = new Discord.MessageEmbed()
-            .setTitle("Event: " + title)
-            .addField("Start time", formatDate(startTime))
-            .addField("Create time", formatDate(created))
-            .addField("Created by", createdBy)
-            .setFooter(`id: ${id}`);
-
-        if (maxParticipants) {
-            embed.addField("Max participants", maxParticipants);
-        }
-        return embed;
-
-    } catch (err) {
-        return new Discord.MessageEmbed()
-            .setTitle("Error formatting event")
-            .setDescription("If this persists, please reach out to the bot admin.")
-            .addField("Error", err.trace);
-    }
-}
-
-function formatDate(dateStr) {
-    // TODO: make the timezone configurable
-    const timezone = "UTC+2";
-    return DateTime.fromISO(dateStr).setZone(timezone).toFormat(`HH:mm EEEE yyyy-MM-dd `) + timezone;
 }
 
 
@@ -151,6 +70,11 @@ function formatErrors(errors) {
         errors.map(error => ` - ${error}`).join("\n");
 }
 
+/**
+ * Parses and validates parameters for the create subcommand.
+ * 
+ * @param {string[]} parameters - the subcommand parameters.
+ */
 function parseCreateEventParams(parameters) {
     const result = parseParameters(parameters);
 
@@ -164,9 +88,18 @@ function parseCreateEventParams(parameters) {
         result.errors.push("Event start time must be ISO-8601 compatible.");
     }
 
+    if (result.maxParticipants && isNaN(parseInt(result.maxParticipants))) {
+        result.errors.push("Max participants must be an integer.");
+    }
+
     return result;
 }
 
+/**
+ * Pulls out known parameters for the event command.
+ * 
+ * @param {string[]} parameters - the command parameters
+ */
 function parseParameters(parameters) {
     const result = { errors: [] };
 
@@ -189,6 +122,153 @@ function parseParameters(parameters) {
     }
 
     return result;
+}
+
+class EventDao {
+    static DATABASE_ITEM_TYPE = "event";
+    ddb;
+
+    /**
+     * Data access object for Events.
+     * 
+     * @param {string} ddbTable - the DynamoDB table that stores events
+     * @param {string} ddbRegion - the AWS region in which the DynamoDB table resides
+     */
+    constructor(ddbTable, ddbRegion) {
+        this.ddb = new RhobotDynamoDB(ddbTable, ddbRegion);
+    }
+
+    /**
+     * Save an event to DynamoDB.
+     * 
+     * @param {Event} event 
+     * @return {Promise<string>} id - the ID of the committed record
+     */
+    updateEvent(channelId, event) {
+        const attributes = EventDao.eventToAttributes(event);
+        return this.ddb.put(channelId, EventDao.DATABASE_ITEM_TYPE, attributes)
+            .then(() => event.id);
+    }
+
+    /**
+     * Read an event from DynamoDB.
+     * 
+     * @param {string} channelId - the Discord channel ID
+     * @param {string} id - the event identifier
+     * @return {Promise<Event>} result - the event read from DynamoDB
+     */
+    readEvent(channelId, id) {
+        return this.ddb.readItem(channelId, EventDao.DATABASE_ITEM_TYPE, id)
+            .then(result => EventDao.attributesToEvent(result.Item));
+    }
+
+    /**
+     * Transform an event object into DynamoDB item attributes.
+     * 
+     * @param {Event} event - the event object
+     * @returns {AWS.DynamoDB.AttributeMap}
+     */
+    static eventToAttributes({ id, title, startTime, createdBy, created, maxParticipants }) {
+        const attributes = {
+            "uuid": { S: id },
+            "Title": { S: title },
+            "StartTime": { S: startTime },
+            "CreatedBy": { S: createdBy },
+            "Created": { S: created }
+        };
+
+        if (maxParticipants) {
+            attributes["MaxParticipants"] = { N: maxParticipants };
+        };
+
+        return attributes;
+    }
+
+    /**
+     * Transform DynamoDB item attributes into an Event object.
+     * 
+     * @param {AWS.DynamoDB.AttributeMap} attributes - DynamoDB item attributes
+     * @returns the corresponding Event object
+     */
+    static attributesToEvent({ uuid, Title, StartTime, CreatedBy, Created, MaxParticipants }) {
+        const params = {
+            id: uuid.S,
+            title: Title.S,
+            startTime: StartTime.S,
+            createdBy: CreatedBy.S,
+            created: Created.S
+        };
+
+        if (MaxParticipants) {
+            params.maxParticipants = MaxParticipants.N;
+        }
+
+        return new Event(params);
+    }
+}
+
+class Event {
+    id;
+    title;
+    startTime;
+    createdBy;
+    created;
+    maxParticipants;
+
+    /**
+     * Models an event.
+     * 
+     * @param {string} id - the unique ID of the event
+     * @param {string} title - the event title
+     * @param {string} startTime - the event start time (ISO-8601 string)
+     * @param {string} createdBy - name of user who created the event
+     * @param {string} created - the time at which the event was created (ISO-8601 string)
+     * @param {string} maxParticipants - the maximum number of participants
+     */
+    constructor({ id, title, startTime, createdBy, created, maxParticipants }) {
+        this.id = id;
+        this.title = title;
+        this.startTime = startTime;
+        this.createdBy = createdBy;
+        this.created = created;
+        this.maxParticipants = maxParticipants;
+    }
+
+    format() {
+        try {
+            const embed = new Discord.MessageEmbed()
+                .setTitle("Event: " + this.title)
+                .addField("Start time", formatDate(this.startTime))
+                .addField("Create time", formatDate(this.created))
+                .addField("Created by", this.createdBy)
+                .setFooter(`id: ${this.id}`);
+
+            if (this.maxParticipants) {
+                embed.addField("Max participants", this.maxParticipants);
+            }
+            return embed;
+
+        } catch (err) {
+            return new Discord.MessageEmbed()
+                .setTitle("Error formatting event")
+                .setDescription("If this persists, please reach out to the bot admin.")
+                .addField("Error", err.trace);
+        }
+    }
+
+    formatLoading() {
+        const embed = new Discord.MessageEmbed()
+            .setTitle(this.title)
+            .setDescription(this.id)
+            .setFooter("Loading event...");
+        return embed;
+    }
+}
+
+function formatDate(dateStr) {
+    // TODO: make the timezone configurable
+    const timezone = "UTC+2";
+    return DateTime.fromISO(dateStr).setZone(timezone).toFormat(`HH:mm EEEE yyyy-MM-dd `) + timezone;
 }
 
 module.exports = buildCommand;
