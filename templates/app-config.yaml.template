@@ -1,0 +1,6 @@
+discordToken: {{discordToken}}
+steamApiKey: {{steamApiKey}}
+battlenetClientKey: {{battlenetClientKey}}
+battlenetClientSecret: {{battlenetClientSecret}}
+dynamodbTable: {{dynamodbTable}}
+dynamodbRegion: {{dynamodbRegion}}

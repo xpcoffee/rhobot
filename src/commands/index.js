@@ -7,8 +7,8 @@ const buildSc2Command = require("./starcraft2");
  * Parses a Discord message and triggers the appropriate command if the message contains a command.
  * @param {Message} The Discord message 
  */
-function buildCommandHandler(credentials) {
-    const { steamApiKey, battlenetClientKey, battlenetClientSecret } = credentials;
+function buildCommandHandler(appConfig) {
+    const { steamApiKey, battlenetClientKey, battlenetClientSecret, dynamodbTable, dynamodbRegion } = appConfig;
 
     const helpCommand = {
         run: message => {

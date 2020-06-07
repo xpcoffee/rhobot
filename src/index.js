@@ -4,17 +4,19 @@ const path = require("path");
 const yaml = require("js-yaml");
 const { buildCommandHandler } = require("./commands");
 
-(function runRhobot() {
-    const credentials = readCredentialsFile();
+const APP_CONFIG_FILENAME = "app-config.yaml";
 
-    if (credentials.status === "error") {
-        console.error(`[ERROR] Unable to load the bot's token from ${CREDENTIAL_FILENAME}. Ensure you've added the file locally. Error: ` + credentials.error);
+(function runRhobot() {
+    const appConfig = readAppConfigFile();
+
+    if (appConfig.status === "error") {
+        console.error(`[ERROR] Unable to load the bot's token from ${APP_CONFIG_FILENAME}. Ensure you've added the file locally. Error: ` + appConfig.error);
         process.exit(1);
     }
-    const { discordToken } = credentials;
+    const { discordToken } = appConfig;
 
     const bot = new Discord.Client();
-    bot.on("message", buildCommandHandler(credentials));
+    bot.on("message", buildCommandHandler(appConfig));
     bot.on("ready", () => console.log("Rhobot is running."));
     bot.login(discordToken);
 })();
@@ -22,10 +24,9 @@ const { buildCommandHandler } = require("./commands");
 /**
  * Attempts to read the credential YAML file.
  */
-function readCredentialsFile() {
-    const CREDENTIAL_FILENAME = "creds.yaml";
+function readAppConfigFile() {
     try {
-        const doc = yaml.safeLoad(fs.readFileSync(path.join(".", CREDENTIAL_FILENAME), 'utf8'));
+        const doc = yaml.safeLoad(fs.readFileSync(path.join(".", APP_CONFIG_FILENAME), 'utf8'));
         return { status: "success", ...doc }
     } catch (e) {
         return { status: "error", error: e };

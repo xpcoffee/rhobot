@@ -15,7 +15,9 @@ function getConfig() {
         dockerImageTag: "DOCKER_IMAGE_TAG",
         steamApiKey: "STEAM_API_KEY",
         battlenetClientKey: "BATTLENET_CLIENT_KEY",
-        battlenetClientSecret: "BATTLENET_CLIENT_SECRET"
+        battlenetClientSecret: "BATTLENET_CLIENT_SECRET",
+        dynamodbTable: "DYNAMO_DB_TABLE",
+        dynamodbRegion: "DYNAMO_DB_REGION",
     };
 
     (function assertExpectedEnvironementVariables() {
@@ -44,7 +46,7 @@ function getConfig() {
 function getTemplateFiles() {
     return [
         "pull-docker-image.template",
-        "creds.yaml.template",
+        "app-config.yaml.template",
         "application-start.template"
     ];
 }
