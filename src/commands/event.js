@@ -54,7 +54,12 @@ function buildCreateCommand(dao) {
                 .then(
                     function updateMessageWithEventDetails(message) {
                         dao.readEvent(channelId, event.id)
-                            .then(event => { message.edit(event.format()) })
+                            .then(event => {
+                                message.edit(event.format());
+                                // Add default reactions which users can use to join
+                                message.react('✅');
+                                message.react('🚫');
+                            })
                             .catch(error => message.edit("Issue reading event " + event.id + ": " + error));
                     }
                 )
