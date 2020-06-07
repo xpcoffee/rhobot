@@ -15,13 +15,15 @@ This is the code for a simple discord bot.
 npm install
 ```
 
-3) **Create a new `creds.yaml` file** in the root directory to hold the bot's credentials.
+3) **Create a new `app-config.yaml` file** in the root directory to hold the bot's credentials.
 ```yaml
 # creds.yaml
 discordToken: <the token>
 steamApiKey: <the key>
 battlenetClientKey: <the key>
 battlenetClientSecret: <the secret>
+dynamodbTable: <DynamoDB table name>
+dynamodbRegion: <DynamoDB table region>
 ```
 <dl>
 <dt><code>discordToken</code></dt>
@@ -30,11 +32,16 @@ battlenetClientSecret: <the secret>
 <dd>Steam API Key; get it by <a href="https://steamcommunity.com/dev">setting up an account and registering for an API key in the SteamCommunity</a>.</dd>
 <dt><code>battlenetClientKey</code> and <code>battlenetClientSecret</code></dt>
 <dd><a href="https://develop.battle.net/documentation/guides/getting-started">BattleNet API credentials.</a> Get them by <a href="https://develop.battle.net/access">setting up a BattleNet dev account.</a></dd>
+<dt><code>dynamodbTable</code> and <code>dynamodbRegion</code></dt>
+<dd>The database used by Rhobot. To call against DynamoDB <b><i>it is expected that AWS credentials will be made available to the process</i></b>
+(e.g. by previousy exporting environment variables or using an EC2 instance profile)</dd>
 </dl>
 
 
-4) **To run the server**, run the following from within the directory:
+4) **To run the server locally**, export AWS API credentials and point node at the `src` directory:
 ```bash
+export AWS_ACCESS_KEY_ID=<your AWS public key>
+export AWS_SECRET_ACCESS_KEY=<your AWS secret key>
 node src/
 ```
 
