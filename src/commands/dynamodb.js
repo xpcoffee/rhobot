@@ -52,7 +52,7 @@ class RhobotDynamoDB {
     /**
      * Get a single record.
      * 
-     * @param {string} channel - the discord channel ID
+     * @param {string} channel - the Discord channel ID
      * @param {string} type - the database record type
      * @param {string} id - the record id
      */
@@ -71,7 +71,8 @@ class RhobotDynamoDB {
     /**
      * Create/update an existing record.
      * 
-     * @param {string} identifier - the database record ID
+     * @param {string} channel - the Discord channel
+     * @param {string} type - the database record type
      * @param {AWS.DynamoDB.PutItemInputAttributeMap} attributes - non-key DynamoDB item attributes
      */
     put(channel, type, attributes) {
@@ -81,6 +82,25 @@ class RhobotDynamoDB {
         };
 
         return this.dynamodb.putItem({ TableName: this.table, Item: ddbItem }).promise();
+    }
+
+    /**
+     * Delete an existing record.
+     * 
+     * @param {string} channel - the Discord channel ID
+     * @param {string} type - the database record type
+     * @param {string} id - the record id
+     */
+    delete(channel, type, id) {
+        const params = {
+            TableName: this.table,
+            Key: {
+                ...RhobotDynamoDB.getPartitionKeyAttribute(channel, type),
+                uuid: { S: id },
+            },
+        };
+
+        return this.dynamodb.deleteItem(params).promise();
     }
 
     static getPartitionKeyAttribute(channel, type) {

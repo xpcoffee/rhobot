@@ -15,7 +15,7 @@ const APP_CONFIG_FILENAME = "app-config.yaml";
     }
     const { discordToken } = appConfig;
 
-    const bot = new Discord.Client();
+    const bot = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
     bot.on("message", buildCommandHandler(appConfig));
     bot.on("ready", () => console.log("Rhobot is running."));
     bot.login(discordToken);

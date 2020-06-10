@@ -18,6 +18,7 @@ const buildCommand = (prefix, ddbTable, ddbRegion) => {
 
     const commands = {
         create: buildCreateCommand(dao),
+        delete: buildDeleteCommand(dao),
         list: buildListCommand(dao),
     };
     return buildNestedCommand(prefix, "event", "Create and manage events.", commands);
@@ -43,8 +44,7 @@ function buildCreateCommand(dao) {
             message.channel.send(Event.formatLoading())
                 .then(eventMessage => {
                     const event = new Event({
-                        // Use the event's Discord message's ID as the uuid - 
-                        // this helps makes messages idempotent if there's more than one bot listening (e.g. testing bot);
+                        // Use the event's Discord message's ID as the uuid - this will make it possible to reference later
                         id: eventMessage.id,
                         title,
                         startTime,
@@ -169,6 +169,57 @@ function formatEvents(channel, title, events) {
 
     return embed;
 }
+
+/**
+ * Command that can delete an event.
+ * 
+ * @param {EventDao} dao - an instance of Event DAO
+ */
+function buildDeleteCommand(dao) {
+    return {
+        run: (message, parameters) => {
+            const { errors, id } = parseDeleteEventParams(parameters);
+            if (errors.length > 0) {
+                message.reply(formatErrors(errors));
+                return;
+            }
+
+            const channelId = message.channel.id;
+
+            // Find the Discord message
+            message.channel.messages.fetch(id)
+                // Then delete
+                .then(eventMessage => {
+                    dao.deleteEvent(channelId, id)
+                        // Then update the discord message
+                        .then(() => {
+                            eventMessage.edit(Event.formatDeleted());
+                            eventMessage.reactions.removeAll();
+                            message.reply(`Event ${id} has been successfully deleted.`);
+                        })
+                })
+                .catch(reason => message.reply(`[ERROR] Unable to delete event ${id}:` + reason));
+        },
+        help: "Delete an event."
+    };
+}
+
+/**
+ * Parses and validates parameters for the create subcommand.
+ * 
+ * @param {string[]} parameters - the subcommand parameters.
+ */
+function parseDeleteEventParams(parameters) {
+    const result = parseParameters(parameters);
+
+    if (!result.id) {
+        result.errors.push('Event ID must be specified with `--id`');
+    }
+
+    return result;
+}
+
+
 /**
  * Pulls out known parameters for the event command.
  * 
@@ -188,6 +239,9 @@ function parseParameters(parameters) {
                 break;
             case "--maxParticipants":
                 result.maxParticipants = parameters.shift();
+                break;
+            case "--id":
+                result.id = parameters.shift();
                 break;
             default:
                 result.errors.push(`Unrecognized option: ${option}`)
@@ -234,6 +288,18 @@ class EventDao {
     readEvent(channelId, id) {
         return this.ddb.readItem(channelId, EventDao.DATABASE_ITEM_TYPE, id)
             .then(result => EventDao.attributesToEvent(result.Item));
+    }
+
+    /**
+     * Delete an event from DynamoDB.
+     * 
+     * @param {string} channelId - the Discord channel ID
+     * @param {string} id - the event identifier
+     * @return {Promise<void>}  the event read from DynamoDB
+     */
+    deleteEvent(channelId, id) {
+        return this.ddb.delete(channelId, EventDao.DATABASE_ITEM_TYPE, id)
+            .then(() => { });
     }
 
     /**
@@ -345,6 +411,13 @@ class Event {
         const embed = new Discord.MessageEmbed()
             .setTitle("Creating new event...")
             .setFooter("Details will update once the event has been created.");
+        return embed;
+    }
+
+    static formatDeleted() {
+        const embed = new Discord.MessageEmbed()
+            .setTitle("Event: 🗑️")
+            .setFooter("This event has been deleted.");
         return embed;
     }
 }
