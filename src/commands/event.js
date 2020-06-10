@@ -18,6 +18,7 @@ const buildCommand = (prefix, ddbTable, ddbRegion) => {
 
     const commands = {
         create: buildCreateCommand(dao),
+        list: buildListCommand(dao),
     };
     return buildNestedCommand(prefix, "event", "Create and manage events.", commands);
 }
@@ -36,43 +37,52 @@ function buildCreateCommand(dao) {
                 return;
             }
 
-            // Use the message's ID as the uuid - this helps makes messages idempodent if there's more than one bot listening (e.g. testing bot);
-            const uuid = message.id;
             const channelId = message.channel.id;
-            const event = new Event({
-                id: uuid,
-                title,
-                startTime,
-                createdBy: message.author.username,
-                maxParticipants,
-                created: DateTime.utc().toISO()
-            });
 
+            // Create a new Discord message - this will be the home of the event
+            message.channel.send(Event.formatLoading())
+                .then(eventMessage => {
+                    const event = new Event({
+                        // Use the event's Discord message's ID as the uuid - 
+                        // this helps makes messages idempotent if there's more than one bot listening (e.g. testing bot);
+                        id: eventMessage.id,
+                        title,
+                        startTime,
+                        createdBy: message.author.username,
+                        maxParticipants,
+                        created: DateTime.utc().toISO()
+                    });
 
-            dao.updateEvent(channelId, event)
-                .then(() => message.channel.send(event.formatLoading()))
-                .then(
-                    function updateMessageWithEventDetails(message) {
-                        dao.readEvent(channelId, event.id)
-                            .then(event => {
-                                message.edit(event.format());
-                                // Add default reactions which users can use to join
-                                message.react('✅');
-                                message.react('🚫');
-                            })
-                            .catch(error => message.edit("Issue reading event " + event.id + ": " + error));
-                    }
-                )
-                .catch(reason => message.reply('[ERROR] Unable to create new event:' + reason));
+                    return createEvent(dao, channelId, eventMessage, event)
+                        .catch(reason => eventMessage.edit('[ERROR] Unable to create new event: ' + reason))
+                });
         },
         help: "Create a new event."
     };
 }
 
-
-function formatErrors(errors) {
-    return `[ERROR] Could not successfully execute command:\n\n` +
-        errors.map(error => ` - ${error}`).join("\n");
+/**
+ * Save the event details and format the event.
+ * 
+ * @param {EventDao} dao - Dao object
+ * @param {string} channelId - the Discord Channel ID
+ * @param {Discord.Message} eventMessage - the Discord message hosting the event
+ * @param {Event} event - the event object
+ */
+function createEvent(dao, channelId, eventMessage, event) {
+    return dao.updateEvent(channelId, event)
+        .then(
+            function updateMessageWithEventDetails() {
+                return dao.readEvent(channelId, event.id)
+                    .then(event =>
+                        eventMessage.edit(event.format())
+                            // Add default reactions which users can use to join
+                            .then(() => eventMessage.react('✅'))
+                            .then(() => eventMessage.react('🚫'))
+                    )
+            }
+        )
+        .catch(error => eventMessage.edit("Issue reading event " + event.id + ": " + error));
 }
 
 /**
@@ -100,6 +110,65 @@ function parseCreateEventParams(parameters) {
     return result;
 }
 
+
+function formatErrors(errors) {
+    return `[ERROR] Could not successfully execute command:\n\n` +
+        errors.map(error => ` - ${error}`).join("\n");
+}
+
+/**
+ * Command that shows upcoming events.
+ * 
+ * @param {EventDao} dao - an instance of Event DAO
+ */
+function buildListCommand(dao) {
+    return {
+        run: (message, _parameters) => {
+            const channel = message.channel;
+            const now = DateTime.utc();
+            const isUpcoming = (event) => DateTime.fromISO(event.startTime) > now;
+
+            dao.readEvents(channel.id)
+                // filter upcoming
+                .then(events => events ? events.filter(isUpcoming) : [])
+                // format results
+                .then(events => {
+                    message.channel.send(formatEvents(channel, "Upcoming events", events));
+                })
+                .catch(error => message.reply("Issue reading upcoming events: " + error));
+
+        },
+        help: "List upcoming events."
+    };
+}
+
+
+/**
+ * Format a set of events
+ * 
+ * @param {Discord.TextChannel | Discord.DMChannel} channel 
+ * @param {Event[]} events - events to format
+ * @return {Discord.MessageEmbed} embed - the formatted embed
+ */
+function formatEvents(channel, title, events) {
+    const guildId = channel.type === "dm" ? "@me" : channel.guild.id;
+
+    const embed = new Discord.MessageEmbed();
+    embed.setTitle(title)
+    events.forEach(event => {
+        const eventLink = `${event.title}`;
+        const relativeStartTime = DateTime.fromISO(event.startTime).toRelative();
+        const field = `Starts ${relativeStartTime} - [link to event](https://discordapp.com/channels/${guildId}/${channel.id}/${event.id})`
+        embed.addField(eventLink, field);
+    })
+    embed.setFooter(
+        events.length > 0
+            ? "Event details can be found on the original post. Follow the links to get there."
+            : "No upcoming events found."
+    );
+
+    return embed;
+}
 /**
  * Pulls out known parameters for the event command.
  * 
@@ -165,6 +234,17 @@ class EventDao {
     readEvent(channelId, id) {
         return this.ddb.readItem(channelId, EventDao.DATABASE_ITEM_TYPE, id)
             .then(result => EventDao.attributesToEvent(result.Item));
+    }
+
+    /**
+     * Read all events for this channel from DynamoDB.
+     * 
+     * @param {string} channelId 
+     * @return {Promise<Event[]>} events - the events from DynamoDB
+     */
+    readEvents(channelId) {
+        return this.ddb.readType(channelId, EventDao.DATABASE_ITEM_TYPE)
+            .then(result => result.Items.map(EventDao.attributesToEvent));
     }
 
     /**
@@ -261,11 +341,10 @@ class Event {
         }
     }
 
-    formatLoading() {
+    static formatLoading() {
         const embed = new Discord.MessageEmbed()
-            .setTitle(this.title)
-            .setDescription(this.id)
-            .setFooter("Loading event...");
+            .setTitle("Creating new event...")
+            .setFooter("Details will update once the event has been created.");
         return embed;
     }
 }

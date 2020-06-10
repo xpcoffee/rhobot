@@ -33,21 +33,20 @@ class RhobotDynamoDB {
      * @param {string} type - the database record type
      */
     readType(channel, type) {
-        const primaryKey = getPartitionKey(channel, type);
         const params = {
             TableName: this.table,
             ExpressionAttributeValues: {
                 ":type": {
-                    S: `${primaryKey}`
-                }
+                    S: `${channel}#${type}`
+                },
             },
-            KeyConditionExpression: `type = :type`,
+            ExpressionAttributeNames: {
+                "#keyname": "type"
+            },
+            KeyConditionExpression: `#keyname = :type`,
         };
 
-        return this.dynamodb.query(params, (err, data) => {
-            if (err) reject(err);
-            else resolve(data);
-        }).promise();
+        return this.dynamodb.query(params).promise();
     }
 
     /**
@@ -87,7 +86,7 @@ class RhobotDynamoDB {
     static getPartitionKeyAttribute(channel, type) {
         return {
             "type": {
-                "S": `${channel}${type}`
+                "S": `${channel}#${type}`
             },
         }
     }
