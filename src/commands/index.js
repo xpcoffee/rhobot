@@ -10,13 +10,13 @@ const Discord = require('discord.js');
  * @param {Message} The Discord message 
  */
 function buildCommandHandler(appConfig) {
-    const { steamApiKey, battlenetClientKey, battlenetClientSecret, dynamodbTable, dynamodbRegion } = appConfig;
+    const { steamApiKey, battlenetClientKey, battlenetClientSecret, dynamodbTable, dynamodbRegion, commandPrefix } = appConfig;
 
     const helpCommand = {
         run: message => {
             const embed = new Discord.MessageEmbed()
                 .setTitle('ρbot commands')
-                .setFooter('Get help on subcommands by running ![command] help');
+                .setFooter(`Get help on subcommands by running ${COMMAND_PREFIX}[command] help`);
 
             Object.keys(COMMANDS).map(command => embed.addField(`${COMMAND_PREFIX}${command}`, COMMANDS[command].help));
             message.channel.send(embed);
@@ -24,13 +24,13 @@ function buildCommandHandler(appConfig) {
         help: "This command."
     };
 
-    const COMMAND_PREFIX = "!";
+    const COMMAND_PREFIX = commandPrefix || "!";
     const COMMANDS = {
         lockdown: lockdownCommand,
-        about: aboutCommand,
+        event: buildEventCommand(COMMAND_PREFIX, dynamodbTable, dynamodbRegion),
         steam: buildSteamCommand(COMMAND_PREFIX, steamApiKey),
         sc2: buildSc2Command(COMMAND_PREFIX, battlenetClientKey, battlenetClientSecret),
-        event: buildEventCommand(COMMAND_PREFIX, dynamodbTable, dynamodbRegion),
+        about: aboutCommand,
         help: helpCommand,
     }
 
