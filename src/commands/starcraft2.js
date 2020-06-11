@@ -1,7 +1,8 @@
 const DateTime = require("luxon").DateTime;
 const fetch = require("node-fetch");
-const { buildCommand: buildNestedCommand } = require("./nestedCommand");
+const { buildCommand: buildNestedCommand, formatErrors } = require("./nestedCommand");
 const BattleNet = require("./battlenet");
+const Discord = require('discord.js');
 
 /**
  * Builds the nested Starcraft 2 command.
@@ -22,31 +23,40 @@ const buildCommand = (prefix, battlenetClientKey, battlenetClientSecret) => {
  * Return information on the current season.
  */
 function buildSeasonCommand(authenticate) {
-    function formatSeason(result) {
-        return `**Starcraft II ${result.year} season ${result.number}**
-        Start date: ${DateTime.fromSeconds(parseInt(result.startDate)).toISODate()}
-        End date: ${DateTime.fromSeconds(parseInt(result.endDate)).toISODate()} `
+    function formatSeason({ year, number, startDate, endDate }) {
+        const embed = new Discord.MessageEmbed();
+        embed.setTitle(`Starcraft II ${year} season ${number}`);
+        embed.addField("Start date", DateTime.fromSeconds(parseInt(startDate)).toISODate());
+        embed.addField("End date", DateTime.fromSeconds(parseInt(endDate)).toISODate());
+        embed.setDescription("[More info on SCII Liquipedia](https://liquipedia.net/starcraft2)");
+        return embed
     }
 
     return {
         run: (message, parameters) => {
-            prepareStarcraftParameters(parameters, ["--region"], authenticate)
-                .then(result => {
-                    if (result.type !== "success") {
-                        message.channel.send(result.msg)
-                        return;
-                    }
+            const { errors, region } = parseSeasonParameters(parameters);
 
-                    getSeason(result.authenticationResult, result.region)
-                        .then(result => {
-                            message.channel.send(result.type === "error" ? result.msg : formatSeason(result))
-                        })
-                });
+            if (errors.length) {
+                message.reply(formatErrors(errors))
+                return;
+            }
+
+            authenticate()
+                .then(res => getSeason(res.authenticationResult, region))
+                .then(formatSeason)
+                .then(season => message.channel.send(season))
+                .catch(err => message.reply(err));
         },
         help: "Show info about the current season."
     };
 }
 
+/**
+ * 
+ * @param {*} credentials 
+ * @param {*} region 
+ * @return {Promise<string>} season
+ */
 async function getSeason(credentials, region) {
     const url = `https://${region}.api.blizzard.com/sc2/ladder/season/${REGIONS[region].regionId}?access_token=${credentials.access_token}`
 
@@ -57,9 +67,24 @@ async function getSeason(credentials, region) {
             }
 
             console.error(`Unable to fetch season info: ${res.status} ${res.statusText}`);
-            return Promise.reject({ type: "error", msg: "Unable to fetch season info. Contact the bot maintainer if issues persist." });
+            throw "Unable to fetch season info. Please contact the bot maintainer if issues persist."
         });
 }
+
+function parseSeasonParameters(parameters) {
+    const result = parseParameters(parameters);
+
+    const allowedRegions = Object.keys(REGIONS);
+
+    if (!result.region) {
+        result.errors.push("You must specify a region using `--region`")
+    } else if (!allowedRegions.includes(result.region)) {
+        result.errors.push(`\`--region\` must be one of ${allowedRegions.join(",")}`);
+    }
+
+    return result;
+}
+
 
 /**
  * The regions also have numbers. Why, I don't know...
@@ -73,8 +98,7 @@ const REGIONS = {
     cn: { regionId: "5" },
 }
 
-// TODO: this feels clunky - need to rethink paramater validation for subcommands
-function parseParameters(parameters, requiredParams) {
+function parseParameters(parameters) {
     const result = { errors: [] };
 
     while (parameters.length) {
@@ -89,30 +113,7 @@ function parseParameters(parameters, requiredParams) {
         }
     }
 
-    if (requiredParams.includes("--region") && result.region === undefined || !Object.keys(REGIONS).includes(result.region)) {
-        result.errors.push(`'--region' must be one of: ${Object.keys(REGIONS).join(",")}`);
-    }
-
     return result;
-}
-
-async function prepareStarcraftParameters(parameters, requiredParams, authenticate) {
-    const options = parseParameters(parameters, requiredParams);
-
-    if (options.errors.length) {
-        return { type: "error", msg: `**Issues found with command:**\r${options.errors.join("\r")}` };
-    }
-
-    const response = await authenticate();
-    if (response.type !== "success") {
-        return { type: "error", msg: response.msg };
-    }
-
-    return {
-        type: "success",
-        authenticationResult: response.authenticationResult,
-        ...options
-    };
 }
 
 module.exports = buildCommand;
