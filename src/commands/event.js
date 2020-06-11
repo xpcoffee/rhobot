@@ -1,4 +1,4 @@
-const buildNestedCommand = require("./nestedCommand");
+const { buildCommand: buildNestedCommand, formatErrors } = require("./nestedCommand");
 const RhobotDynamoDB = require("./dynamodb").RhobotDynamoDB;
 const Discord = require('discord.js');
 const DateTime = require('luxon').DateTime;
@@ -110,11 +110,6 @@ function parseCreateEventParams(parameters) {
     return result;
 }
 
-
-function formatErrors(errors) {
-    return `[ERROR] Could not successfully execute command:\n\n` +
-        errors.map(error => ` - ${error}`).join("\n");
-}
 
 /**
  * Command that shows upcoming events.

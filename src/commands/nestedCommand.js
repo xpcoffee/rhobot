@@ -39,4 +39,13 @@ const buildCommand = (prefix, name, helpText, commands) => {
     };
 }
 
-module.exports = buildCommand;
+function formatErrors(errors) {
+    return `[ERROR] Could not successfully execute command:\n\n` +
+        errors.map(error => ` - ${error}`).join("\n");
+}
+
+
+module.exports = {
+    buildCommand,
+    formatErrors
+};
