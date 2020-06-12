@@ -18,6 +18,7 @@ npm install
 3) **Create a new `app-config.yaml` file** in the root directory to hold the bot's credentials.
 ```yaml
 # creds.yaml
+commandPrefix: <a command prefix other than "!" e.g. "$" to allow you to run your dev bot with different commands>
 discordToken: <the token>
 steamApiKey: <the key>
 battlenetClientKey: <the key>
