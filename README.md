@@ -43,7 +43,8 @@ dynamodbRegion: <DynamoDB table region>
 ```bash
 export AWS_ACCESS_KEY_ID=<your AWS public key>
 export AWS_SECRET_ACCESS_KEY=<your AWS secret key>
-node src/
+npm run build
+npm run start
 ```
 
 ## Additional info

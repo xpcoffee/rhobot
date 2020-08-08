@@ -6,8 +6,10 @@ WORKDIR /usr/src/app
 # where available (npm@5+)
 COPY package*.json ./
 RUN npm install
+RUN npm run build
 
-# Bundle application source code
+# Copy project into image
+# TODO: only copy built source and dependencies (ideally bundled)
 COPY . .
 
-CMD ["node", "src/index.js"]
+CMD ["node", "dist"]

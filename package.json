@@ -2,22 +2,26 @@
   "name": "rhobot",
   "version": "1.0.0",
   "description": "Discord servant robot",
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "renderTemplates": "node build-scripts/renderTemplates.js",
+    "start": "node dist",
+    "build": "npx tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Emerick Bosch",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.691.0",
-    "discord.js": "^12.1.1",
-    "js-yaml": "^3.13.1",
-    "luxon": "^1.22.2",
+    "aws-sdk": "^2.729.0",
+    "discord.js": "^12.2.0",
+    "js-yaml": "^3.14.0",
+    "luxon": "^1.24.1",
     "node-fetch": "^2.6.0",
-    "uuid": "^8.1.0"
+    "uuid": "^8.3.0"
   },
   "devDependencies": {
-    "handlebars": "^4.7.6"
+    "@types/node": "^14.0.27",
+    "handlebars": "^4.7.6",
+    "typescript": "^3.9.7"
   }
 }
