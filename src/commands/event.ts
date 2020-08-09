@@ -17,8 +17,13 @@ export function buildCommand(
     { prefix, ddbTable, ddbRegion, commandEnabled = true }:
         { prefix: string; ddbTable?: string; ddbRegion?: string; commandEnabled?: boolean; }
 ): undefined | RhobotCommand {
-    if (!(ddbTable && ddbRegion) || !commandEnabled) {
-        console.error("Unable to create event command. Both DynamoDB table name and region are required.");
+    if (!commandEnabled) {
+        console.log("[INFO] Event command disabled in config.");
+        return undefined;
+    }
+
+    if (!(ddbTable && ddbRegion)) {
+        console.error("[ERROR] Unable to create event command. Both DynamoDB table name and region are required. Please check your app-config.");
         return undefined;
     }
 
@@ -26,7 +31,7 @@ export function buildCommand(
     try {
         dao = new EventDao(ddbTable, ddbRegion);
     } catch (e) {
-        console.error("Unable to create event command: Error initializing DynamoDB DAO.", e);
+        console.error("[ERROR] Unable to create event command: Error initializing DynamoDB DAO.", e);
         return undefined;
     }
 
