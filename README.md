@@ -23,8 +23,6 @@ discordToken: <the token>
 steamApiKey: <the key>
 battlenetClientKey: <the key>
 battlenetClientSecret: <the secret>
-dynamodbTable: <DynamoDB table name>
-dynamodbRegion: <DynamoDB table region>
 ```
 <dl>
 <dt><code>discordToken</code></dt>
@@ -41,9 +39,29 @@ dynamodbRegion: <DynamoDB table region>
 
 4) **To run the server locally**, export AWS API credentials and point node at the `src` directory:
 ```bash
+npm run build
+npm run start
+```
+
+### The `event` command
+
+The event command allows users to create "event" objects in Discord which other users can sign up to.
+This requires an AWS DynamoDB table to exist (the events are stored there) and is disabled by default.
+
+If you want to enable this functionality:
+
+1) Create an AWS DynamoDB table with a partition key called `type` (string).
+2) Enable the command and add the DynamoDB table name and region to `app-config.yaml`.
+```yaml
+enableEventCommand: true
+# DynamoDB details - only currently required for use with the event command
+dynamodbTable: <DynamoDB table name>
+dynamodbRegion: <DynamoDB table region>
+```
+3) Before starting Rhobot, export AWS environment variables which have READ and WRITE access to the table.
+```bash
 export AWS_ACCESS_KEY_ID=<your AWS public key>
 export AWS_SECRET_ACCESS_KEY=<your AWS secret key>
-npm run build
 npm run start
 ```
 

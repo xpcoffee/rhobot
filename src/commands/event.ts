@@ -12,9 +12,10 @@ const DateTime = require('luxon').DateTime;
  * @param {string} prefix - the command prefix (everything that comes before this command)
  * @param {string} ddbTable - the DynamoDB table that stores events
  * @param {string} ddbRegion - the AWS region in which the DynamoDB table resides
+ * @param {boolean} commandEnabled - flag to enable or disable this command. Defaults to `false`.
  */
 export function buildCommand(
-    { prefix, ddbTable, ddbRegion, commandEnabled = true }:
+    { prefix, ddbTable, ddbRegion, commandEnabled = false }:
         { prefix: string; ddbTable?: string; ddbRegion?: string; commandEnabled?: boolean; }
 ): undefined | RhobotCommand {
     if (!commandEnabled) {
