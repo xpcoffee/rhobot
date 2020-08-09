@@ -19,7 +19,7 @@ export function buildCommand(
         { prefix: string; ddbTable?: string; ddbRegion?: string; commandEnabled?: boolean; }
 ): undefined | RhobotCommand {
     if (!commandEnabled) {
-        console.log("[INFO] Event command disabled in config.");
+        console.log("[INFO] Event command disabled. To enable it please follow instructions in the README.");
         return undefined;
     }
 
