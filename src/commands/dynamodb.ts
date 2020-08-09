@@ -1,8 +1,8 @@
-const AWS = require('aws-sdk');
+import { DynamoDB } from "aws-sdk";
 
 class RhobotDynamoDB {
-    dynamodb;
-    table;
+    dynamodb: DynamoDB;
+    tableName: string;
 
     /**
      * Thin wrapper around the DynamoDB client that knows about the Rhobot table format.
@@ -21,9 +21,9 @@ class RhobotDynamoDB {
      * @param {string} table - The DynamoDB table to interact with.
      * @param {string} region - The AWS region the table is in.
      */
-    constructor(table, region) {
-        this.dynamodb = new AWS.DynamoDB({ region });
-        this.table = table;
+    constructor(table: string, region: string) {
+        this.dynamodb = new DynamoDB({ region });
+        this.tableName = table;
     }
 
     /**
@@ -32,9 +32,9 @@ class RhobotDynamoDB {
      * @param {string} channel - the Discord channel ID
      * @param {string} type - the database record type
      */
-    readType(channel, type) {
+    readType(channel: string, type: string) {
         const params = {
-            TableName: this.table,
+            TableName: this.tableName,
             ExpressionAttributeValues: {
                 ":type": {
                     S: `${channel}#${type}`
@@ -56,9 +56,9 @@ class RhobotDynamoDB {
      * @param {string} type - the database record type
      * @param {string} id - the record id
      */
-    readItem(channel, type, id) {
+    readItem(channel: string, type: string, id: string) {
         const params = {
-            TableName: this.table,
+            TableName: this.tableName,
             Key: {
                 ...RhobotDynamoDB.getPartitionKeyAttribute(channel, type),
                 uuid: { S: id },
@@ -75,13 +75,13 @@ class RhobotDynamoDB {
      * @param {string} type - the database record type
      * @param {AWS.DynamoDB.PutItemInputAttributeMap} attributes - non-key DynamoDB item attributes
      */
-    put(channel, type, attributes) {
+    put(channel: string, type: string, attributes: AWS.DynamoDB.PutItemInputAttributeMap) {
         const ddbItem = {
             ...RhobotDynamoDB.getPartitionKeyAttribute(channel, type),
             ...attributes
         };
 
-        return this.dynamodb.putItem({ TableName: this.table, Item: ddbItem }).promise();
+        return this.dynamodb.putItem({ TableName: this.tableName, Item: ddbItem }).promise();
     }
 
     /**
@@ -91,9 +91,9 @@ class RhobotDynamoDB {
      * @param {string} type - the database record type
      * @param {string} id - the record id
      */
-    delete(channel, type, id) {
+    delete(channel: string, type: string, id: string) {
         const params = {
-            TableName: this.table,
+            TableName: this.tableName,
             Key: {
                 ...RhobotDynamoDB.getPartitionKeyAttribute(channel, type),
                 uuid: { S: id },
