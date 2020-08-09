@@ -1,4 +1,5 @@
 const fetch = require("node-fetch");
+const { URLSearchParams } = require("url");
 
 function prepareAuthentication(battlenetClientKey, battlenetClientSecret) {
     return async function authenticate() {
@@ -7,7 +8,7 @@ function prepareAuthentication(battlenetClientKey, battlenetClientSecret) {
 
         const params = new URLSearchParams();
         params.append("grant_type", "client_credentials");
-        const credentials = new Buffer.from(`${battlenetClientKey}:${battlenetClientSecret}`).toString("base64");
+        const credentials = Buffer.from(`${battlenetClientKey}:${battlenetClientSecret}`).toString("base64");
 
         const authenticationResult = await fetch(
             "https://us.battle.net/oauth/token",
