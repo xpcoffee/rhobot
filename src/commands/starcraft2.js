@@ -1,6 +1,6 @@
 const DateTime = require("luxon").DateTime;
 const fetch = require("node-fetch");
-const { buildCommand: buildNestedCommand, formatErrors } = require("./nestedCommand");
+const { buildNestedCommand, formatErrors } = require("./nestedCommand");
 const BattleNet = require("./battlenet");
 const Discord = require('discord.js');
 

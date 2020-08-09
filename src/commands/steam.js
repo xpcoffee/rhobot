@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 const DateTime = require("luxon").DateTime;
 const Discord = require('discord.js');
-const { buildCommand: buildNestedCommand, formatErrors } = require("./nestedCommand");
+const { buildNestedCommand, formatErrors } = require("./nestedCommand");
 
 /**
  * Builds the nested Steam command.

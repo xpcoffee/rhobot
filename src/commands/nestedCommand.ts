@@ -1,17 +1,19 @@
-const Discord = require('discord.js');
+import { MessageEmbed } from "discord.js";
+import { RhobotCommand } from ".";
+
 
 /**
- * Builds the root command for complex subcommands.
+ * Builds the root command capable of running subcommands.
  * 
  * @param {string} prefix - The bot command prefix
  * @param {string} name - The subcommand name
- * @param {string} helpText - The subcommand help text (excluding the list of its own subcommands)
- * @param {function} buildSubcommands - Object of commands (excluding the help command)
+ * @param {string} helpText - The subcommand help text
+ * @param {RhobotCommandMap} commands - Object of commands excluding the help command
  */
-const buildCommand = (prefix, name, helpText, commands) => {
-    const helpCommand = {
+export const buildNestedCommand = (prefix: string, name: string, helpText: string, commands: RhobotCommandMap): RhobotCommand => {
+    const helpCommand: RhobotCommand = {
         run: message => {
-            const embed = new Discord.MessageEmbed()
+            const embed = new MessageEmbed()
                 .setTitle(`${prefix}${name}`)
                 .setDescription(helpText)
 
@@ -39,13 +41,11 @@ const buildCommand = (prefix, name, helpText, commands) => {
     };
 }
 
-function formatErrors(errors) {
+interface RhobotCommandMap {
+    [commandName: string]: RhobotCommand;
+}
+
+export function formatErrors(errors) {
     return `[ERROR] Could not successfully execute command:\n\n` +
         errors.map(error => ` - ${error}`).join("\n");
 }
-
-
-module.exports = {
-    buildCommand,
-    formatErrors
-};

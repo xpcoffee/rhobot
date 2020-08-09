@@ -1,6 +1,7 @@
-const { buildCommand: buildNestedCommand, formatErrors } = require("./nestedCommand");
+const { buildNestedCommand, formatErrors } = require("./nestedCommand");
 const RhobotDynamoDB = require("./dynamodb").RhobotDynamoDB;
-const Discord = require('discord.js');
+import { Message, MessageEmbed, TextChannel, DMChannel, NewsChannel } from 'discord.js';
+import { RhobotCommand } from '.';
 const DateTime = require('luxon').DateTime;
 
 
@@ -13,7 +14,7 @@ const DateTime = require('luxon').DateTime;
  * @param {string} ddbTable - the DynamoDB table that stores events
  * @param {string} ddbRegion - the AWS region in which the DynamoDB table resides
  */
-const buildCommand = (prefix, ddbTable, ddbRegion) => {
+const buildCommand = (prefix: string, ddbTable: string, ddbRegion: string) => {
     const dao = new EventDao(ddbTable, ddbRegion);
 
     const commands = {
@@ -62,14 +63,14 @@ function buildCreateCommand(dao) {
 }
 
 /**
- * Save the event details and format the event.
+ * Saves event details and formats the event in the Discord channel.
  * 
  * @param {EventDao} dao - Dao object
  * @param {string} channelId - the Discord Channel ID
  * @param {Discord.Message} eventMessage - the Discord message hosting the event
  * @param {Event} event - the event object
  */
-function createEvent(dao, channelId, eventMessage, event) {
+function createEvent(dao: EventDao, channelId: string, eventMessage: Message, event: Event) {
     return dao.updateEvent(channelId, event)
         .then(
             function updateMessageWithEventDetails() {
@@ -90,7 +91,7 @@ function createEvent(dao, channelId, eventMessage, event) {
  * 
  * @param {string[]} parameters - the subcommand parameters.
  */
-function parseCreateEventParams(parameters) {
+function parseCreateEventParams(parameters: string[]) {
     const result = parseParameters(parameters);
 
     if (!result.title) {
@@ -112,11 +113,11 @@ function parseCreateEventParams(parameters) {
 
 
 /**
- * Command that shows upcoming events.
+ * Builds a command that shows upcoming events.
  * 
  * @param {EventDao} dao - an instance of Event DAO
  */
-function buildListCommand(dao) {
+function buildListCommand(dao: EventDao): RhobotCommand {
     return {
         run: (message, _parameters) => {
             const channel = message.channel;
@@ -141,14 +142,15 @@ function buildListCommand(dao) {
 /**
  * Format a set of events
  * 
- * @param {Discord.TextChannel | Discord.DMChannel} channel 
- * @param {Event[]} events - events to format
- * @return {Discord.MessageEmbed} embed - the formatted embed
+ * @param channel - the channel where the event will be formatted
+ * @param events - events to format
+ * @param title - the title of the event
+ * @return embed - the formatted embed
  */
-function formatEvents(channel, title, events) {
+function formatEvents(channel: TextChannel | DMChannel | NewsChannel, title: string, events: Event[]): MessageEmbed {
     const guildId = channel.type === "dm" ? "@me" : channel.guild.id;
 
-    const embed = new Discord.MessageEmbed();
+    const embed = new MessageEmbed();
     embed.setTitle(title)
     events.forEach(event => {
         const eventLink = `${event.title}`;
@@ -166,11 +168,9 @@ function formatEvents(channel, title, events) {
 }
 
 /**
- * Command that can delete an event.
- * 
- * @param {EventDao} dao - an instance of Event DAO
+ * Builds a command that can delete an event.
  */
-function buildDeleteCommand(dao) {
+function buildDeleteCommand(dao: EventDao): RhobotCommand {
     return {
         run: (message, parameters) => {
             const { errors, id } = parseDeleteEventParams(parameters);
@@ -201,10 +201,8 @@ function buildDeleteCommand(dao) {
 
 /**
  * Parses and validates parameters for the create subcommand.
- * 
- * @param {string[]} parameters - the subcommand parameters.
  */
-function parseDeleteEventParams(parameters) {
+function parseDeleteEventParams(parameters: string[]) {
     const result = parseParameters(parameters);
 
     if (!result.id) {
@@ -214,14 +212,21 @@ function parseDeleteEventParams(parameters) {
     return result;
 }
 
+interface PossibleParameters {
+    title?: string;
+    startTime?: string;
+    maxParticipants?: string;
+    id?: string;
+    errors: string[];
+}
 
 /**
  * Pulls out known parameters for the event command.
  * 
  * @param {string[]} parameters - the command parameters
  */
-function parseParameters(parameters) {
-    const result = { errors: [] };
+function parseParameters(parameters: string[]) {
+    const result: PossibleParameters = { errors: [] };
 
     while (parameters.length) {
         const option = parameters.shift();
@@ -337,7 +342,7 @@ class EventDao {
      * @returns the corresponding Event object
      */
     static attributesToEvent({ uuid, Title, StartTime, CreatedBy, Created, MaxParticipants }) {
-        const params = {
+        const params: EventParams = {
             id: uuid.S,
             title: Title.S,
             startTime: StartTime.S,
@@ -353,25 +358,27 @@ class EventDao {
     }
 }
 
+interface EventParams {
+    id: string;
+    title: string;
+    startTime: string;
+    createdBy: string;
+    created: string;
+    maxParticipants?: string;
+}
+
 class Event {
-    id;
-    title;
-    startTime;
-    createdBy;
-    created;
-    maxParticipants;
+    id: string;
+    title: string;
+    startTime: string;
+    createdBy: string;
+    created: string;
+    maxParticipants: string; // FIXME: change to number
 
     /**
-     * Models an event.
-     * 
-     * @param {string} id - the unique ID of the event
-     * @param {string} title - the event title
-     * @param {string} startTime - the event start time (ISO-8601 string)
-     * @param {string} createdBy - name of user who created the event
-     * @param {string} created - the time at which the event was created (ISO-8601 string)
-     * @param {string} maxParticipants - the maximum number of participants
+     * Models an event that we want to host in the future.
      */
-    constructor({ id, title, startTime, createdBy, created, maxParticipants }) {
+    constructor({ id, title, startTime, createdBy, created, maxParticipants }: EventParams) {
         this.id = id;
         this.title = title;
         this.startTime = startTime;
@@ -382,7 +389,7 @@ class Event {
 
     format() {
         try {
-            const embed = new Discord.MessageEmbed()
+            const embed = new MessageEmbed()
                 .setTitle("Event: " + this.title)
                 .addField("Start time", formatDate(this.startTime))
                 .addField("Create time", formatDate(this.created))
@@ -395,7 +402,7 @@ class Event {
             return embed;
 
         } catch (err) {
-            return new Discord.MessageEmbed()
+            return new MessageEmbed()
                 .setTitle("Error formatting event")
                 .setDescription("If this persists, please reach out to the bot admin.")
                 .addField("Error", err.trace);
@@ -403,14 +410,14 @@ class Event {
     }
 
     static formatLoading() {
-        const embed = new Discord.MessageEmbed()
+        const embed = new MessageEmbed()
             .setTitle("Creating new event...")
             .setFooter("Details will update once the event has been created.");
         return embed;
     }
 
     static formatDeleted() {
-        const embed = new Discord.MessageEmbed()
+        const embed = new MessageEmbed()
             .setTitle("Event: 🗑️")
             .setFooter("This event has been deleted.");
         return embed;

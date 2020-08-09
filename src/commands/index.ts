@@ -3,18 +3,27 @@ const aboutCommand = require("./about");
 const buildSteamCommand = require("./steam");
 const buildSc2Command = require("./starcraft2");
 const buildEventCommand = require("./event");
-const Discord = require('discord.js');
+import { Message, MessageEmbed } from 'discord.js';
+
+/**
+ * The basic form of a Rhobot command. 
+ * 
+ * Takes in a Discord Message and parameters and does some work.
+ */
+export interface RhobotCommand {
+    run: (message: Message, parameters: string[]) => void,
+    help: string
+}
 
 /**
  * Parses a Discord message and triggers the appropriate command if the message contains a command.
- * @param {Message} The Discord message 
  */
-function buildCommandHandler(appConfig) {
+export function buildCommandHandler(appConfig) {
     const { steamApiKey, battlenetClientKey, battlenetClientSecret, dynamodbTable, dynamodbRegion, commandPrefix } = appConfig;
 
     const helpCommand = {
         run: message => {
-            const embed = new Discord.MessageEmbed()
+            const embed = new MessageEmbed()
                 .setTitle('ρbot commands')
                 .setFooter(`Get help on subcommands by running ${COMMAND_PREFIX}[command] help`);
 
@@ -54,5 +63,3 @@ function buildCommandHandler(appConfig) {
         }
     }
 }
-
-module.exports = { buildCommandHandler };
