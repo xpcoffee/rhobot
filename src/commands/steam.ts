@@ -1,7 +1,7 @@
-const fetch = require("node-fetch");
 const DateTime = require("luxon").DateTime;
 const Discord = require('discord.js');
 const { buildNestedCommand, formatErrors } = require("./nestedCommand");
+import fetch from "node-fetch";
 
 /**
  * Builds the nested Steam command.
@@ -9,7 +9,7 @@ const { buildNestedCommand, formatErrors } = require("./nestedCommand");
  * @param {string} prefix - The command string prefix that a user needs to type before this one.
  * @param {string} steamApiKey - The API key needed to call the Steam API.
  */
-const buildCommand = (prefix, steamApiKey) => {
+const buildCommand = (prefix: string, steamApiKey: string) => {
     const commands = {
         getUser: buildGetUserCommand(steamApiKey),
     };
@@ -21,7 +21,7 @@ const buildCommand = (prefix, steamApiKey) => {
  * 
  * @param {string} steamApiKey - The API key needed to call the Steam API.
  */
-function buildGetUserCommand(steamApiKey) {
+function buildGetUserCommand(steamApiKey: string) {
     async function resolveVanityURL({ vanityName }) {
         const { response } = await fetch(`http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${steamApiKey}&vanityurl=${vanityName}`)
             .then(res => res.json());
@@ -88,7 +88,7 @@ function buildGetUserCommand(steamApiKey) {
  * 
  * @param {string[]} parameters - the subcommand parameters.
  */
-function parseGetUserParams(parameters) {
+function parseGetUserParams(parameters: string[]) {
     const result = parseParameters(parameters);
 
     if (Object.keys(result).length === 1) { // "errors" will always be there
@@ -103,14 +103,20 @@ function parseGetUserParams(parameters) {
     return result;
 }
 
+interface Parameters {
+    errors: string[];
+    userId?: string;
+    vanity?: string;
+    help?: boolean;
+}
 
 /**
  * Pulls out known parameters for the steam command.
  * 
  * @param {string[]} parameters - the command parameters
  */
-function parseParameters(parameters) {
-    const result = { errors: [] };
+function parseParameters(parameters: string[]) {
+    const result: Parameters = { errors: [] };
 
     while (parameters.length) {
         const option = parameters.shift();
@@ -139,7 +145,7 @@ function parseParameters(parameters) {
  * 
  * @param {Object} playerSummary - The player summary object returned from the API.
  */
-function formatPlayerSummary({ playerSummary }) {
+function formatPlayerSummary(playerSummary) {
     function orUnknown(maybeString) {
         return maybeString || "Unkown";
     }

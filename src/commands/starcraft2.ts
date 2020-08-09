@@ -1,3 +1,5 @@
+import { BattleNetAuthResult } from "./battlenet";
+
 const DateTime = require("luxon").DateTime;
 const fetch = require("node-fetch");
 const { buildNestedCommand, formatErrors } = require("./nestedCommand");
@@ -36,7 +38,7 @@ function buildSeasonCommand(authenticate) {
         run: (message, parameters) => {
             const { errors, region } = parseSeasonParameters(parameters);
 
-            if (errors.length) {
+            if (errors.length || !region) {
                 message.reply(formatErrors(errors))
                 return;
             }
@@ -52,12 +54,9 @@ function buildSeasonCommand(authenticate) {
 }
 
 /**
- * 
- * @param {*} credentials 
- * @param {*} region 
- * @return {Promise<string>} season
+ * Returns the current StarCraft 2 season number.
  */
-async function getSeason(credentials, region) {
+async function getSeason(credentials: BattleNetAuthResult, region: string) {
     const url = `https://${region}.api.blizzard.com/sc2/ladder/season/${REGIONS[region].regionId}?access_token=${credentials.access_token}`
 
     return fetch(url)
@@ -73,7 +72,6 @@ async function getSeason(credentials, region) {
 
 function parseSeasonParameters(parameters) {
     const result = parseParameters(parameters);
-
     const allowedRegions = Object.keys(REGIONS);
 
     if (!result.region) {
@@ -98,8 +96,14 @@ const REGIONS = {
     cn: { regionId: "5" },
 }
 
-function parseParameters(parameters) {
-    const result = { errors: [] };
+interface UnvalidatedParameters {
+    errors: string[];
+    region?: string;
+}
+
+
+function parseParameters(parameters: string[]) {
+    const result: UnvalidatedParameters = { errors: [], region: "" };
 
     while (parameters.length) {
         const option = parameters.shift();
