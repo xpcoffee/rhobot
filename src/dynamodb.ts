@@ -1,6 +1,6 @@
 import { DynamoDB } from "aws-sdk";
 
-class RhobotDynamoDB {
+export class RhobotDynamoDB {
     dynamodb: DynamoDB;
     tableName: string;
 
@@ -111,5 +111,3 @@ class RhobotDynamoDB {
         }
     }
 }
-
-module.exports = { RhobotDynamoDB };

@@ -1,7 +1,7 @@
 const { buildNestedCommand, formatErrors } = require("./nestedCommand");
-const RhobotDynamoDB = require("./dynamodb").RhobotDynamoDB;
 import { Message, MessageEmbed, TextChannel, DMChannel, NewsChannel } from 'discord.js';
 import { RhobotCommand } from '.';
+import { RhobotDynamoDB } from '../dynamodb';
 const DateTime = require('luxon').DateTime;
 
 /**

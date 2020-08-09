@@ -1,4 +1,4 @@
-import { BattleNetAuthResult } from "./battlenet";
+import { BattleNetAuthResult } from "../battlenet";
 
 const DateTime = require("luxon").DateTime;
 const fetch = require("node-fetch");
