@@ -27,13 +27,17 @@ export interface AppConfig {
     /**
      * The DynamoDB table name used to store Rhobot data (currently only used in event command).
      */
-    "dynamodbTable": string | undefined;
+    "dynamodbTable"?: string;
     /**
      * The AWS region in which DynamoDB table lives that's used to store Rhobot data (currently only used in event command).
      */
-    "dynamodbRegion": string | undefined;
+    "dynamodbRegion"?: string;
     /**
-     * The Rhobot instance's command prefix - defaults to !
+     * The Rhobot instance's command prefix - defaults to "!".
      */
-    "commandPrefix": string | undefined;
+    "commandPrefix"?: string;
+    /**
+     * Flag used to enable/disable the event command - defaults to `true`.
+     */
+    "enableEventCommand"?: boolean;
 }

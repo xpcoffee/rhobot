@@ -4,7 +4,6 @@ import { Message, MessageEmbed, TextChannel, DMChannel, NewsChannel } from 'disc
 import { RhobotCommand } from '.';
 const DateTime = require('luxon').DateTime;
 
-
 /**
  * Builds the Event command.
  * 
@@ -14,8 +13,22 @@ const DateTime = require('luxon').DateTime;
  * @param {string} ddbTable - the DynamoDB table that stores events
  * @param {string} ddbRegion - the AWS region in which the DynamoDB table resides
  */
-const buildCommand = (prefix: string, ddbTable: string, ddbRegion: string) => {
-    const dao = new EventDao(ddbTable, ddbRegion);
+export function buildCommand(
+    { prefix, ddbTable, ddbRegion, commandEnabled = true }:
+        { prefix: string; ddbTable?: string; ddbRegion?: string; commandEnabled?: boolean; }
+): undefined | RhobotCommand {
+    if (!(ddbTable && ddbRegion) || !commandEnabled) {
+        console.error("Unable to create event command. Both DynamoDB table name and region are required.");
+        return undefined;
+    }
+
+    let dao: EventDao;
+    try {
+        dao = new EventDao(ddbTable, ddbRegion);
+    } catch (e) {
+        console.error("Unable to create event command: Error initializing DynamoDB DAO.", e);
+        return undefined;
+    }
 
     const commands = {
         create: buildCreateCommand(dao),
@@ -30,7 +43,7 @@ const buildCommand = (prefix: string, ddbTable: string, ddbRegion: string) => {
  * 
  * @param {EventDao} dao - an instance of Event DAO
  */
-function buildCreateCommand(dao) {
+function buildCreateCommand(dao: EventDao): RhobotCommand {
     return {
         run: (message, parameters) => {
             const { errors, title, startTime, maxParticipants } = parseCreateEventParams(parameters);
@@ -47,8 +60,8 @@ function buildCreateCommand(dao) {
                     const event = new Event({
                         // Use the event's Discord message's ID as the uuid - this will make it possible to reference later
                         id: eventMessage.id,
-                        title,
-                        startTime,
+                        title: title || "",
+                        startTime: startTime || "",
                         createdBy: message.author.username,
                         maxParticipants,
                         created: DateTime.utc().toISO()
@@ -174,7 +187,7 @@ function buildDeleteCommand(dao: EventDao): RhobotCommand {
     return {
         run: (message, parameters) => {
             const { errors, id } = parseDeleteEventParams(parameters);
-            if (errors.length > 0) {
+            if (errors.length > 0 || !id) {
                 message.reply(formatErrors(errors));
                 return;
             }
@@ -262,7 +275,7 @@ class EventDao {
      * @param {string} ddbTable - the DynamoDB table that stores events
      * @param {string} ddbRegion - the AWS region in which the DynamoDB table resides
      */
-    constructor(ddbTable, ddbRegion) {
+    constructor(ddbTable: string, ddbRegion: string) {
         this.ddb = new RhobotDynamoDB(ddbTable, ddbRegion);
     }
 
@@ -272,7 +285,7 @@ class EventDao {
      * @param {Event} event 
      * @return {Promise<string>} id - the ID of the committed record
      */
-    updateEvent(channelId, event) {
+    updateEvent(channelId, event: Event): Promise<string> {
         const attributes = EventDao.eventToAttributes(event);
         return this.ddb.put(channelId, EventDao.DATABASE_ITEM_TYPE, attributes)
             .then(() => event.id);
@@ -285,7 +298,7 @@ class EventDao {
      * @param {string} id - the event identifier
      * @return {Promise<Event>} result - the event read from DynamoDB
      */
-    readEvent(channelId, id) {
+    readEvent(channelId: string, id: string): Promise<Event> {
         return this.ddb.readItem(channelId, EventDao.DATABASE_ITEM_TYPE, id)
             .then(result => EventDao.attributesToEvent(result.Item));
     }
@@ -297,7 +310,7 @@ class EventDao {
      * @param {string} id - the event identifier
      * @return {Promise<void>}  the event read from DynamoDB
      */
-    deleteEvent(channelId, id) {
+    deleteEvent(channelId: string, id: string): Promise<void> {
         return this.ddb.delete(channelId, EventDao.DATABASE_ITEM_TYPE, id)
             .then(() => { });
     }
@@ -308,7 +321,7 @@ class EventDao {
      * @param {string} channelId 
      * @return {Promise<Event[]>} events - the events from DynamoDB
      */
-    readEvents(channelId) {
+    readEvents(channelId: string): Promise<Event[]> {
         return this.ddb.readType(channelId, EventDao.DATABASE_ITEM_TYPE)
             .then(result => result.Items.map(EventDao.attributesToEvent));
     }
@@ -319,7 +332,7 @@ class EventDao {
      * @param {Event} event - the event object
      * @returns {AWS.DynamoDB.AttributeMap}
      */
-    static eventToAttributes({ id, title, startTime, createdBy, created, maxParticipants }) {
+    static eventToAttributes({ id, title, startTime, createdBy, created, maxParticipants }: Event): AWS.DynamoDB.AttributeMap {
         const attributes = {
             "uuid": { S: id },
             "Title": { S: title },
@@ -341,13 +354,13 @@ class EventDao {
      * @param {AWS.DynamoDB.AttributeMap} attributes - DynamoDB item attributes
      * @returns the corresponding Event object
      */
-    static attributesToEvent({ uuid, Title, StartTime, CreatedBy, Created, MaxParticipants }) {
+    static attributesToEvent({ uuid, Title, StartTime, CreatedBy, Created, MaxParticipants }: AWS.DynamoDB.AttributeMap) {
         const params: EventParams = {
-            id: uuid.S,
-            title: Title.S,
-            startTime: StartTime.S,
-            createdBy: CreatedBy.S,
-            created: Created.S
+            id: uuid.S || "",
+            title: Title.S || "",
+            startTime: StartTime.S || "",
+            createdBy: CreatedBy.S || "",
+            created: Created.S || ""
         };
 
         if (MaxParticipants) {
@@ -373,7 +386,7 @@ class Event {
     startTime: string;
     createdBy: string;
     created: string;
-    maxParticipants: string; // FIXME: change to number
+    maxParticipants?: string; // FIXME: change to number
 
     /**
      * Models an event that we want to host in the future.
@@ -424,10 +437,8 @@ class Event {
     }
 }
 
-function formatDate(dateStr) {
+function formatDate(dateStr: string) {
     // TODO: make the timezone configurable
     const timezone = "UTC+2";
     return DateTime.fromISO(dateStr).setZone(timezone).toFormat(`HH:mm EEEE yyyy-MM-dd `) + timezone;
 }
-
-module.exports = buildCommand;

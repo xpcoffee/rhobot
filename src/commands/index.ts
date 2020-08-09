@@ -2,7 +2,7 @@ const lockdownCommand = require("./lockdown");
 const aboutCommand = require("./about");
 const buildSteamCommand = require("./steam");
 const buildSc2Command = require("./starcraft2");
-const buildEventCommand = require("./event");
+import { buildCommand as buildEventCommand } from "./event";
 import { Message, MessageEmbed } from 'discord.js';
 import { AppConfig } from './appConfig';
 
@@ -20,7 +20,7 @@ export interface RhobotCommand {
  * Parses a Discord message and triggers the appropriate command if the message contains a command.
  */
 export function buildCommandHandler(appConfig: AppConfig) {
-    const { steamApiKey, battlenetClientKey, battlenetClientSecret, dynamodbTable, dynamodbRegion, commandPrefix } = appConfig;
+    const { steamApiKey, battlenetClientKey, battlenetClientSecret, dynamodbTable, dynamodbRegion, commandPrefix, enableEventCommand } = appConfig;
 
     /**
      * The overall help command.
@@ -37,10 +37,27 @@ export function buildCommandHandler(appConfig: AppConfig) {
         help: "This command."
     };
 
+    /**
+     * A command to use when another command is disabled.
+     * 
+     * Taking a current stance that we still want to show disabled commands; we can change our minds here if this proves annoying to users.
+     */
+    const disabledCommand: RhobotCommand = {
+        run: message => {
+            const embed = new MessageEmbed()
+                .setTitle('Disabled')
+                .setDescription('This command has been disabled. Please reach out to the bot admin if this is unexpected.')
+
+            message.channel.send(embed);
+        },
+        help: "Currently disabled. Please reach out to the bot admin if this is unexpected."
+    };
+
+
     const COMMAND_PREFIX = commandPrefix || "!";
-    const COMMANDS = {
+    const COMMANDS: Record<string, RhobotCommand> = {
         lockdown: lockdownCommand,
-        event: buildEventCommand(COMMAND_PREFIX, dynamodbTable, dynamodbRegion),
+        event: buildEventCommand({ prefix: COMMAND_PREFIX, ddbTable: dynamodbTable, ddbRegion: dynamodbRegion, commandEnabled: enableEventCommand }) || disabledCommand,
         steam: buildSteamCommand(COMMAND_PREFIX, steamApiKey),
         sc2: buildSc2Command(COMMAND_PREFIX, battlenetClientKey, battlenetClientSecret),
         about: aboutCommand,
