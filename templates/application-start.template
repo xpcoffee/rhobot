@@ -4,7 +4,6 @@ if [ ! -z $(docker ps -q --filter name=rhobot) ]
 then
     echo "[INFO] Instance of rhobot already running; killing the instance before continuing."
     docker stop rhobot
-    docker rm rhobot
 
     for i in {1..5}
     do 
@@ -20,6 +19,14 @@ then
     fi
 else
     echo "[INFO] No previous instance of rhobot found."
+fi
+
+if [ ! -z $(docker container ls -aq --filter name=rhobot) ]
+then
+    echo "[INFO] rhobot container found. Removing it before replacing it with the newer version."
+    docker rm rhobot
+else
+    echo "[INFO] No previous rhobot container found."
 fi
 
 echo "[INFO] Logging in to ECR..."
