@@ -17,14 +17,6 @@ export interface AppConfig {
      */
     "steamApiKey": string;
     /**
-     * The client key used to auth against the BattleNet APIs.
-     */
-    "battlenetClientKey": string;
-    /**
-     * The secret key used to auth against the BattleNet APIs.
-     */
-    "battlenetClientSecret": string;
-    /**
      * The DynamoDB table name used to store Rhobot data (currently only used in event command).
      */
     "dynamodbTable"?: string;
@@ -37,7 +29,19 @@ export interface AppConfig {
      */
     "commandPrefix"?: string;
     /**
-     * Flag used to enable/disable the event command - defaults to `true`.
+     * Flag used to enable/disable the event command - defaults to `false`.
      */
     "enableEventCommand"?: boolean;
+    /**
+     * Flag used to enable/disable the sc2 command - defaults to `false`.
+     */
+    "enableSC2Command"?: boolean;
+    /**
+     * The client key used to auth against the BattleNet APIs.
+     */
+    "battlenetClientKey": string;
+    /**
+     * The secret key used to auth against the BattleNet APIs.
+     */
+    "battlenetClientSecret": string;
 }

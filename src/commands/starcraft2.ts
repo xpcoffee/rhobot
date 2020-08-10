@@ -1,20 +1,25 @@
-import { BattleNetAuthResult } from "../battlenet";
+import { BattleNetAuthResult, prepareAuthentication } from "../battlenet";
 
 const DateTime = require("luxon").DateTime;
 const fetch = require("node-fetch");
 const { buildNestedCommand, formatErrors } = require("./nestedCommand");
-const BattleNet = require("./battlenet");
 const Discord = require('discord.js');
 
 /**
  * Builds the nested Starcraft 2 command.
- * 
- * @param {string} prefix - The command string prefix that a user needs to type before this one.
- * @param {string} battlenetClientKey - The API client key needed to call the BattleNet API.
- * @param {string} battlenetClientSecret - The API client secret needed to call the BattleNet API.
  */
-const buildCommand = (prefix, battlenetClientKey, battlenetClientSecret) => {
-    const authenticate = BattleNet.prepareAuthentication(battlenetClientKey, battlenetClientSecret);
+const buildCommand = ({ prefix, battlenetClientKey, battlenetClientSecret, commandEnabled = false }: { prefix: string, battlenetClientKey?: string, battlenetClientSecret?: string, commandEnabled?: boolean }) => {
+    if (!commandEnabled) {
+        console.log("[INFO] sc2 command disabled. To enable it please follow instructions in the README.");
+        return undefined;
+    }
+
+    if (!(battlenetClientKey && battlenetClientSecret)) {
+        console.error("[ERROR] Unable to create the starcraft command. Both BattleNet client key and secret are required. Please check your app-config.");
+        return undefined;
+    }
+
+    const authenticate = prepareAuthentication(battlenetClientKey, battlenetClientSecret);
     const commands = {
         "season": buildSeasonCommand(authenticate),
     };

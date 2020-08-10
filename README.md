@@ -41,6 +41,17 @@ npm run build
 npm run start
 ```
 
+### The `sc2` command
+
+The `sc2` command allows users to surface Starcraft 2 information. This command is disabled by default.
+
+If you want to enable this functionality, enable the command and add a BattleNet client key and secret to `app-config.yaml`.
+```yaml
+enableSC2Command: true
+battlenetClientKey: <BattleNet client key>
+battlenetClientSecret: <BattleNet client secret>
+```
+
 ### The `event` command
 
 The event command allows users to create "event" objects in Discord which other users can sign up to.
