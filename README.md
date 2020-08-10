@@ -19,8 +19,6 @@ npm install
 commandPrefix: <a command prefix other than "!" e.g. "$" to allow you to run your dev bot with different commands>
 discordToken: <the token>
 steamApiKey: <the key>
-battlenetClientKey: <the key>
-battlenetClientSecret: <the secret>
 ```
 <dl>
 <dt><code>discordToken</code></dt>
