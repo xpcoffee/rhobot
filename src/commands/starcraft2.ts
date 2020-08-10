@@ -1,4 +1,5 @@
 import { BattleNetAuthResult, prepareAuthentication } from "../battlenet";
+import { RhobotCommand } from ".";
 
 const DateTime = require("luxon").DateTime;
 const fetch = require("node-fetch");
@@ -8,7 +9,7 @@ const Discord = require('discord.js');
 /**
  * Builds the nested Starcraft 2 command.
  */
-const buildCommand = ({ prefix, battlenetClientKey, battlenetClientSecret, commandEnabled = false }: { prefix: string, battlenetClientKey?: string, battlenetClientSecret?: string, commandEnabled?: boolean }) => {
+export function buildCommand({ prefix, battlenetClientKey, battlenetClientSecret, commandEnabled = false }: { prefix: string, battlenetClientKey?: string, battlenetClientSecret?: string, commandEnabled?: boolean }): RhobotCommand | undefined {
     if (!commandEnabled) {
         console.log("[INFO] sc2 command disabled. To enable it please follow instructions in the README.");
         return undefined;
@@ -124,5 +125,3 @@ function parseParameters(parameters: string[]) {
 
     return result;
 }
-
-module.exports = buildCommand;

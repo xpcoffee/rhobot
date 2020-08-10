@@ -1,8 +1,8 @@
 const lockdownCommand = require("./lockdown");
 const aboutCommand = require("./about");
 const buildSteamCommand = require("./steam");
-const buildSc2Command = require("./starcraft2");
-import { buildCommand as buildEventCommand, buildCommand } from "./event";
+import { buildCommand as buildEventCommand } from "./event";
+import { buildCommand as buildSc2Command } from "./starcraft2";
 import { Message, MessageEmbed } from 'discord.js';
 import { AppConfig } from './appConfig';
 
@@ -20,7 +20,7 @@ export interface RhobotCommand {
  * Parses a Discord message and triggers the appropriate command if the message contains a command.
  */
 export function buildCommandHandler(appConfig: AppConfig) {
-    const { steamApiKey, battlenetClientKey, battlenetClientSecret, dynamodbTable, dynamodbRegion, commandPrefix, enableEventCommand } = appConfig;
+    const { steamApiKey, battlenetClientKey, battlenetClientSecret, dynamodbTable, dynamodbRegion, commandPrefix, enableEventCommand, enableSC2Command } = appConfig;
 
     /**
      * The overall help command.
@@ -31,7 +31,15 @@ export function buildCommandHandler(appConfig: AppConfig) {
                 .setTitle('ρbot commands')
                 .setFooter(`Get help on subcommands by running ${COMMAND_PREFIX}[command] help`);
 
-            Object.keys(COMMANDS).map(command => embed.addField(`${COMMAND_PREFIX}${command}`, COMMANDS[command].help));
+            Object.keys(COMMANDS)
+                .filter(command => {
+                    if (!COMMANDS[command]) {
+                        console.error("[ERROR] Non-existent command:", command);
+                        return false;
+                    }
+                    return true;
+                })
+                .map(command => embed.addField(`${COMMAND_PREFIX}${command}`, COMMANDS[command].help));
             message.channel.send(embed);
         },
         help: "This command."
@@ -63,7 +71,7 @@ export function buildCommandHandler(appConfig: AppConfig) {
         lockdown: lockdownCommand,
         event: buildEventCommand({ prefix: COMMAND_PREFIX, ddbTable: dynamodbTable, ddbRegion: dynamodbRegion, commandEnabled: enableEventCommand }) || buildDisabledCommand("event"),
         steam: buildSteamCommand(COMMAND_PREFIX, steamApiKey),
-        sc2: buildSc2Command(COMMAND_PREFIX, battlenetClientKey, battlenetClientSecret),
+        sc2: buildSc2Command({ prefix: COMMAND_PREFIX, battlenetClientKey, battlenetClientSecret, commandEnabled: enableSC2Command }) || buildDisabledCommand("sc2"),
         about: aboutCommand,
         help: helpCommand,
     }
