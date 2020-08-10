@@ -3,7 +3,7 @@ import { RhobotCommand } from ".";
 
 
 /**
- * Builds the root command capable of running subcommands.
+ * Builds a command capable of running subcommands.
  * 
  * @param {string} prefix - The bot command prefix
  * @param {string} name - The subcommand name
