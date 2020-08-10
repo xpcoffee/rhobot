@@ -2,17 +2,11 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "lib": [
-      "ESNext"
-    ],
-    "allowJs": true,
+    "lib": ["ESNext"],
     "target": "esnext",
     "module": "commonjs",
     "experimentalDecorators": true,
-    "checkJs": true,
     "strictNullChecks": true
   },
-  "include": [
-    "./src/**/*"
-  ]
+  "include": ["./src/**/*"]
 }
