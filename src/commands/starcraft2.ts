@@ -1,9 +1,8 @@
 import { BattleNetAuthResult, prepareAuthentication } from "../battlenet";
-import { RhobotCommand } from ".";
-
+import { RhobotCommand, formatErrors } from ".";
 import { DateTime } from "luxon";
 import fetch from "node-fetch";
-import { buildNestedCommand, formatErrors } from "./nestedCommand";
+import { buildNestedCommand } from "./nestedCommand";
 import * as Discord from "discord.js";
 
 /**
