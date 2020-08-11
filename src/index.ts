@@ -2,8 +2,8 @@ import * as Discord from "discord.js";
 import * as fs from "fs";
 import * as path from "path";
 import * as yaml from "js-yaml";
-import { buildCommandHandler } from "./commands";
-import { AppConfig } from "./commands/appConfig";
+import { buildCommandHandler } from "./commands/commandHandler";
+import { AppConfig } from "./appConfig";
 
 const APP_CONFIG_FILENAME = "app-config.yaml";
 

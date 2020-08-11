@@ -1,6 +1,6 @@
-import { buildNestedCommand, formatErrors } from "./nestedCommand";
+import { buildNestedCommand } from "./nestedCommand";
 import { Message, MessageEmbed, TextChannel, DMChannel, NewsChannel } from "discord.js";
-import { RhobotCommand } from ".";
+import { RhobotCommand, formatErrors } from ".";
 import { RhobotDynamoDB } from "../dynamodb";
 import { DateTime } from "luxon";
 

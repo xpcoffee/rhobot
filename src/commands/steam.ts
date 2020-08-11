@@ -1,8 +1,8 @@
 import { DateTime } from "luxon";
 import * as Discord from "discord.js";
-import { buildNestedCommand, formatErrors } from "./nestedCommand";
+import { buildNestedCommand } from "./nestedCommand";
 import fetch from "node-fetch";
-import { RhobotCommand } from ".";
+import { RhobotCommand, formatErrors } from ".";
 
 /**
  * Builds the nested Steam command.
