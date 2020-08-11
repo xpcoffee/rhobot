@@ -1,6 +1,6 @@
 # ρbot
 
-This is the code for a simple discord bot.
+A custom discord bot.
 
 ## Getting started
 
@@ -16,20 +16,18 @@ npm install
 3) **Create a new `app-config.yaml` file** in the root directory to hold the bot's credentials.
 ```yaml
 # creds.yaml
-commandPrefix: <a command prefix other than "!" e.g. "$" to allow you to run your dev bot with different commands>
+commandPrefix: <the Rhobot command prefix>
 discordToken: <the token>
 steamApiKey: <the key>
 ```
+
 <dl>
+<dt><code>commandPrefix</code></dt>
+<dd>The prefix for commands that the bot will use e.g. <code>!</code> will result in commands of the form <code>!help</code></dd>
 <dt><code>discordToken</code></dt>
 <dd>The Discord bot ClientKey. Get it by <a href="https://discordapp.com/developers/applications">setting up a Discord application and adding a bot</a>.</dd>
 <dt><code>steamApiKey</code></dt>
 <dd>Steam API Key; get it by <a href="https://steamcommunity.com/dev">setting up an account and registering for an API key in the SteamCommunity</a>.</dd>
-<dt><code>battlenetClientKey</code> and <code>battlenetClientSecret</code></dt>
-<dd><a href="https://develop.battle.net/documentation/guides/getting-started">BattleNet API credentials.</a> Get them by <a href="https://develop.battle.net/access">setting up a BattleNet dev account.</a></dd>
-<dt><code>dynamodbTable</code> and <code>dynamodbRegion</code></dt>
-<dd>The database used by Rhobot. To call against DynamoDB <b><i>it is expected that AWS credentials will be made available to the process</i></b>
-(e.g. by previousy exporting environment variables or using an EC2 instance profile)</dd>
 </dl>
 
 
@@ -39,7 +37,9 @@ npm run build
 npm run start
 ```
 
-### The `sc2` command
+## Enabling commands
+
+### sc2
 
 The `sc2` command allows users to surface Starcraft 2 information. This command is disabled by default.
 
@@ -50,9 +50,15 @@ battlenetClientKey: <BattleNet client key>
 battlenetClientSecret: <BattleNet client secret>
 ```
 
-### The `event` command
+<dl>
+<dt><code>battlenetClientKey</code> and <code>battlenetClientSecret</code></dt>
+<dd><a href="https://develop.battle.net/documentation/guides/getting-started">BattleNet API credentials.</a> Get them by <a href="https://develop.battle.net/access">setting up a BattleNet dev account.</a></dd>
+</dl>
 
-The event command allows users to create "event" objects in Discord which other users can sign up to.
+
+### event
+
+The `event` command allows users to create "event" objects in Discord which other users can sign up to.
 This requires an AWS DynamoDB table to exist (the events are stored there) and is disabled by default.
 
 If you want to enable this functionality:
@@ -65,6 +71,13 @@ enableEventCommand: true
 dynamodbTable: <DynamoDB table name>
 dynamodbRegion: <DynamoDB table region>
 ```
+
+<dl>
+<dt><code>dynamodbTable</code> and <code>dynamodbRegion</code></dt>
+<dd>The database used by Rhobot. To call against DynamoDB <b><i>it is expected that AWS credentials will be made available to the process</i></b>
+(e.g. by previousy exporting environment variables or using an EC2 instance profile)</dd>
+</dl>
+
 3) Before starting Rhobot, export AWS environment variables which have READ and WRITE access to the table.
 ```bash
 export AWS_ACCESS_KEY_ID=<your AWS public key>
