@@ -48,7 +48,3 @@ export const buildNestedCommand = (
 interface RhobotCommandMap {
   [commandName: string]: RhobotCommand;
 }
-
-export function formatErrors(errors: string[]): string {
-  return "[ERROR] Could not successfully execute command:\n\n" + errors.map((error) => ` - ${error}`).join("\n");
-}
