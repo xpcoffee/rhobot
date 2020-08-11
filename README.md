@@ -36,7 +36,7 @@ commandPrefix: <optional command prefix - defaults to !>
 <dd>Optional prefix for commands that the bot will use e.g. <code>!</code> will result in commands of the form <code>!help</code></dd>
 </dl>
 
-4. **To run the server locally**, export AWS API credentials and point node at the `src` directory:
+4. **To run the server locally** build and run the project:
 
 ```bash
 npm run build
