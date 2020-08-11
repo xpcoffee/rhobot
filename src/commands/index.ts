@@ -31,6 +31,7 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
     commandPrefix,
     enableEventCommand,
     enableSC2Command,
+    enableSteamCommand,
   } = appConfig;
 
   /**
@@ -87,7 +88,9 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
         ddbRegion: dynamodbRegion,
         commandEnabled: enableEventCommand,
       }) || buildDisabledCommand("event"),
-    steam: buildSteamCommand(COMMAND_PREFIX, steamApiKey),
+    steam:
+      buildSteamCommand({ prefix: COMMAND_PREFIX, steamApiKey, commandEnabled: enableSteamCommand }) ||
+      buildDisabledCommand("steam"),
     sc2:
       buildSc2Command({
         prefix: COMMAND_PREFIX,

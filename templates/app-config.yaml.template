@@ -4,5 +4,6 @@ battlenetClientKey: {{battlenetClientKey}}
 battlenetClientSecret: {{battlenetClientSecret}}
 dynamodbTable: {{dynamodbTable}}
 dynamodbRegion: {{dynamodbRegion}}
+enableSteamCommand: true
 enableSC2Command: true
 enableEventCommand: true

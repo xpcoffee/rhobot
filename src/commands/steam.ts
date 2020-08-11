@@ -10,7 +10,27 @@ import { RhobotCommand } from ".";
  * @param {string} prefix - The command string prefix that a user needs to type before this one.
  * @param {string} steamApiKey - The API key needed to call the Steam API.
  */
-export const buildCommand = (prefix: string, steamApiKey: string): RhobotCommand => {
+export const buildCommand = ({
+  prefix,
+  steamApiKey,
+  commandEnabled = false,
+}: {
+  prefix: string;
+  steamApiKey?: string;
+  commandEnabled?: boolean;
+}): RhobotCommand | undefined => {
+  if (!commandEnabled) {
+    console.log("[INFO] steam command disabled. To enable it please follow instructions in the README.");
+    return undefined;
+  }
+
+  if (!steamApiKey) {
+    console.error(
+      "[ERROR] Unable to create the steam command. " + "The Steam API key is required. Please check your app-config."
+    );
+    return undefined;
+  }
+
   const commands = { getUser: buildGetUserCommand(steamApiKey) };
   return buildNestedCommand(prefix, "steam", "Surface Steam information.", commands);
 };

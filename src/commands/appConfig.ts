@@ -14,6 +14,10 @@ export interface AppConfig {
    */
   discordToken: string;
   /**
+   * Flag used to enable/disable the steam command - defaults to `false`.
+   */
+  enableSteamCommand?: boolean;
+  /**
    * The API key used to make calls against the Steam API.
    */
   steamApiKey: string;
