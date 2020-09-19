@@ -50,4 +50,12 @@ export interface AppConfig {
    * The secret key used to auth against the BattleNet APIs.
    */
   battlenetClientSecret: string;
+  /**
+   * The secret key used to auth against the gw2 APIs.
+   */
+  gw2APIKey: string;
+    /**
+   * Flag used to enable/disable the gw2 command - defaults to `false`.
+   */
+  enableGW2Command :boolean;
 }
