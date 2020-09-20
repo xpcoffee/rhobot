@@ -3,7 +3,7 @@ import { aboutCommand } from "./about";
 import { buildCommand as buildSteamCommand } from "./steam";
 import { buildCommand as buildEventCommand } from "./event";
 import { buildCommand as buildSc2Command } from "./starcraft2";
-import { buildCommand as buildGW2Command } from "./gw2";
+import { buildCommand as buildGW2Command } from "./guildwars2";
 import { Message, MessageEmbed } from "discord.js";
 import { AppConfig } from "../appConfig";
 import { RhobotCommand } from ".";
@@ -25,7 +25,7 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
     enableSC2Command,
     enableSteamCommand,
     enableGW2Command,
-    gw2APIKey,
+    guildWars2APIKey,
   } = appConfig;
 
   /**
@@ -94,7 +94,7 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
       }) || buildDisabledCommand("sc2"),
       gw2: buildGW2Command({
         prefix: COMMAND_PREFIX,
-        gw2APIKey,
+        guildWars2APIKey,
         commandEnabled: enableGW2Command,
     }) || buildDisabledCommand("gw2"),
     about: aboutCommand,

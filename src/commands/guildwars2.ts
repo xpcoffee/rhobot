@@ -7,11 +7,11 @@ import { buildNestedCommand } from "./nestedCommand";
  */
 export function buildCommand({
   prefix,
-  gw2APIKey,
+  guildWars2APIKey,
   commandEnabled = false,
 }: {
   prefix: string;
-  gw2APIKey?: string;
+  guildWars2APIKey?: string;
   commandEnabled?: boolean;
 }): RhobotCommand | undefined {
   if (!commandEnabled) {
@@ -19,7 +19,7 @@ export function buildCommand({
     return undefined;
   }
 
-  if (!(gw2APIKey)) {
+  if (!(guildWars2APIKey)) {
     console.error(
       "[ERROR] Unable to create the gw2 command. " +
         "API key required. Please check your app-config."
@@ -29,8 +29,8 @@ export function buildCommand({
 
    const commands = {
        title: buildTitleCommand(),
-       characters: buildCharactersCommand(gw2APIKey),
-       wallet: buildCurrencyCommand(gw2APIKey),
+       characters: buildCharactersCommand(guildWars2APIKey),
+       wallet: buildCurrencyCommand(guildWars2APIKey),
     };
   return buildNestedCommand(prefix, "gw2", "Surface GW2 information.", commands);
 }
@@ -50,25 +50,25 @@ function buildTitleCommand() {
           }
 
             getTitle(Number(parameters[0]))
-            .then((text) => message.channel.send(text[0]["name"]))
+            .then((titleJSONArr) => message.channel.send(titleJSONArr[0]["name"]))
             .catch((err) => message.reply(err));
         },
         help: "Show title name given title id",
     };
 }
 
-function buildCharactersCommand(gw2APIKey){
+function buildCharactersCommand(guildWars2APIKey){
     return {
         run: (message) => {
-            getCharacters(gw2APIKey)
-            .then((text) => message.channel.send(text))
+            getCharacters(guildWars2APIKey)
+            .then((charNames) => message.channel.send(charNames))
             .catch((err) => message.reply(err));
         },
         help: "Show character names",
     };
 }
 
-function buildCurrencyCommand(gw2APIKey){
+function buildCurrencyCommand(guildWars2APIKey){
   return {
       run: (message, parameters) => {
 
@@ -86,7 +86,7 @@ function buildCurrencyCommand(gw2APIKey){
               return;
             }
             const currencyid = currency["id"];
-            getWallet(gw2APIKey)
+            getWallet(guildWars2APIKey)
             .then( (wallet) => {
               const currencyInWallet = wallet.find(walletItem => walletItem["id"] === currencyid);
               const currencyAmount = currencyInWallet["value"];
@@ -96,7 +96,7 @@ function buildCurrencyCommand(gw2APIKey){
             .catch((err) => message.reply(err));
         });
       },
-      help: "Show how much of a currency u have",
+      help: "Show how much of a currency you have",
   };
 }
 
@@ -118,16 +118,16 @@ async function getTitle(titleID) {
 /**
  * Get GW2 characters.
  */
-async function getCharacters(gw2APIKey) {
-    const url = `https://api.guildwars2.com/v2/characters?access_token=${gw2APIKey}`;
+async function getCharacters(guildWars2APIKey) {
+    const url = `https://api.guildwars2.com/v2/characters?access_token=${guildWars2APIKey}`;
   
     return fetch(url).then((res) => {
       if (res.ok) {
         return res.json();
       }
   
-      console.error(`Unable to fetch titles: ${res.status} ${res.statusText}`);
-      throw "Unable to fetch titles info. Please contact the bot maintainer if issues persist.";
+      console.error(`Unable to fetch characters: ${res.status} ${res.statusText}`);
+      throw "Unable to fetch characters info. Please contact the bot maintainer if issues persist.";
     });
   }
 
@@ -151,8 +151,8 @@ async function getCurrencies() {
 /**
  * Get GW2 wallet.
  */
-async function getWallet(gw2APIKey) {
-  const url = `https://api.guildwars2.com/v2/account/wallet?access_token=${gw2APIKey}`;
+async function getWallet(guildWars2APIKey) {
+  const url = `https://api.guildwars2.com/v2/account/wallet?access_token=${guildWars2APIKey}`;
 
   return fetch(url).then((res) => {
     if (res.ok) {
