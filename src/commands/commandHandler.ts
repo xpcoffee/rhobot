@@ -6,6 +6,7 @@ import { buildCommand as buildSc2Command } from "./starcraft2";
 import { Message, MessageEmbed } from "discord.js";
 import { AppConfig } from "../appConfig";
 import { RhobotCommand } from ".";
+import { discordInfoCommand } from "./discordInfo";
 
 type DiscordMessageHandler = (message: Message) => void;
 
@@ -72,6 +73,7 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
   const COMMAND_PREFIX = commandPrefix || "!";
   const COMMANDS: Record<string, RhobotCommand> = {
     lockdown: lockdownCommand,
+    discordInfo: discordInfoCommand,
     event:
       buildEventCommand({
         prefix: COMMAND_PREFIX,
