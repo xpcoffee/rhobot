@@ -50,4 +50,8 @@ export interface AppConfig {
    * The secret key used to auth against the BattleNet APIs.
    */
   battlenetClientSecret: string;
+  /**
+   * Comma separated list of DISCORD_USER_ID:GUILD_WARS_2_API_KEY
+   */
+  guildWars2ApiKeys: string;
 }
