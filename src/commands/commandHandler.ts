@@ -1,7 +1,6 @@
 import { lockdownCommand } from "./lockdown";
 import { aboutCommand } from "./about";
 import { buildCommand as buildSteamCommand } from "./steam";
-import { buildCommand as buildEventCommand } from "./event";
 import { buildCommand as buildSc2Command } from "./starcraft2";
 import { Message, MessageEmbed } from "discord.js";
 import { AppConfig } from "../appConfig";
@@ -21,7 +20,6 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
     dynamodbTable,
     dynamodbRegion,
     commandPrefix,
-    enableEventCommand,
     enableSC2Command,
     enableSteamCommand,
   } = appConfig;
@@ -43,7 +41,7 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
           }
           return true;
         })
-        .map((command) => embed.addField(`${COMMAND_PREFIX}${command}`, COMMANDS[command].help));
+        .forEach((command) => embed.addField(`${COMMAND_PREFIX}${command}`, COMMANDS[command].help));
       message.channel.send(embed);
     },
     help: "This command.",
@@ -74,13 +72,6 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
   const COMMANDS: Record<string, RhobotCommand> = {
     lockdown: lockdownCommand,
     discordInfo: discordInfoCommand,
-    event:
-      buildEventCommand({
-        prefix: COMMAND_PREFIX,
-        ddbTable: dynamodbTable,
-        ddbRegion: dynamodbRegion,
-        commandEnabled: enableEventCommand,
-      }) || buildDisabledCommand("event"),
     steam:
       buildSteamCommand({ prefix: COMMAND_PREFIX, steamApiKey, commandEnabled: enableSteamCommand }) ||
       buildDisabledCommand("steam"),

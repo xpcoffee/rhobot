@@ -7,4 +7,3 @@ dynamodbRegion: {{dynamodbRegion}}
 guildWars2ApiKeys: {{guildWars2ApiKeys}}
 enableSteamCommand: true
 enableSC2Command: true
-enableEventCommand: true

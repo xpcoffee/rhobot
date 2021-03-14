@@ -35,10 +35,6 @@ export interface AppConfig {
    */
   commandPrefix?: string;
   /**
-   * Flag used to enable/disable the event command - defaults to `false`.
-   */
-  enableEventCommand?: boolean;
-  /**
    * Flag used to enable/disable the sc2 command - defaults to `false`.
    */
   enableSC2Command?: boolean;
