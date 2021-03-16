@@ -4,6 +4,7 @@ import * as path from "path";
 import * as yaml from "js-yaml";
 import { buildCommandHandler } from "./commands/commandHandler";
 import { AppConfig } from "./appConfig";
+import { LOGGER } from "./logger";
 
 const APP_CONFIG_FILENAME = "app-config.yaml";
 
@@ -11,8 +12,8 @@ const APP_CONFIG_FILENAME = "app-config.yaml";
   const appConfig = readAppConfigFile();
 
   if (appConfig.status === "error") {
-    console.error(
-      `[ERROR] Unable to load the bot's token from ${APP_CONFIG_FILENAME}. ` +
+    LOGGER.error(
+      `Unable to load the bot's token from ${APP_CONFIG_FILENAME}. ` +
         "Ensure you've added the file locally. Error:" +
         appConfig.error
     );
@@ -24,7 +25,7 @@ const APP_CONFIG_FILENAME = "app-config.yaml";
     partials: ["MESSAGE", "CHANNEL", "REACTION"],
   });
   bot.on("message", buildCommandHandler(appConfig));
-  bot.on("ready", () => console.log("Rhobot is running."));
+  bot.on("ready", () => LOGGER.info("Rhobot is running."));
   bot.login(discordToken);
 })();
 

@@ -3,6 +3,7 @@ import * as Discord from "discord.js";
 import { buildNestedCommand } from "./nestedCommand";
 import fetch from "node-fetch";
 import { RhobotCommand, formatErrors } from ".";
+import { LOGGER } from "../logger";
 
 /**
  * Builds the nested Steam command.
@@ -20,13 +21,13 @@ export const buildCommand = ({
   commandEnabled?: boolean;
 }): RhobotCommand | undefined => {
   if (!commandEnabled) {
-    console.log("[INFO] steam command disabled. To enable it please follow instructions in the README.");
+    LOGGER.info("steam command disabled. To enable it please follow instructions in the README.");
     return undefined;
   }
 
   if (!steamApiKey) {
-    console.error(
-      "[ERROR] Unable to create the steam command. " + "The Steam API key is required. Please check your app-config."
+    LOGGER.error(
+      "Unable to create the steam command. " + "The Steam API key is required. Please check your app-config."
     );
     return undefined;
   }
@@ -173,7 +174,7 @@ function formatPlayerSummary(playerSummary) {
     return maybeString || "Unkown";
   }
 
-  console.log(playerSummary);
+  LOGGER.info(playerSummary);
 
   const lastOnline = playerSummary.lastlogoff && DateTime.fromSeconds(playerSummary.lastlogoff).toRelative();
 

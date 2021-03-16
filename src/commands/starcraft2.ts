@@ -4,6 +4,7 @@ import { DateTime } from "luxon";
 import fetch from "node-fetch";
 import { buildNestedCommand } from "./nestedCommand";
 import * as Discord from "discord.js";
+import { LOGGER } from "../logger";
 
 /**
  * Builds the nested Starcraft 2 command.
@@ -20,12 +21,12 @@ export function buildCommand({
   commandEnabled?: boolean;
 }): RhobotCommand | undefined {
   if (!commandEnabled) {
-    console.log("[INFO] sc2 command disabled. To enable it please follow instructions in the README.");
+    LOGGER.info("sc2 command disabled. To enable it please follow instructions in the README.");
     return undefined;
   }
 
   if (!(battlenetClientKey && battlenetClientSecret)) {
-    console.error(
+    LOGGER.error(
       "[ERROR] Unable to create the starcraft command. " +
         "Both BattleNet client key and secret are required. Please check your app-config."
     );
@@ -80,7 +81,7 @@ async function getSeason(credentials: BattleNetAuthResult, region: string) {
       return res.json();
     }
 
-    console.error(`Unable to fetch season info: ${res.status} ${res.statusText}`);
+    LOGGER.error(`Unable to fetch season info: ${res.status} ${res.statusText}`);
     throw "Unable to fetch season info. Please contact the bot maintainer if issues persist.";
   });
 }

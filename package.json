@@ -13,12 +13,14 @@
   "author": "Emerick Bosch",
   "license": "MIT",
   "dependencies": {
+    "@types/winston": "^2.4.4",
     "aws-sdk": "^2.729.0",
     "discord.js": "^12.2.0",
     "js-yaml": "^3.14.0",
     "luxon": "^1.24.1",
     "node-fetch": "^2.6.1",
-    "uuid": "^8.3.0"
+    "uuid": "^8.3.0",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "@types/jest": "^26.0.14",

@@ -6,6 +6,7 @@ import { Message, MessageEmbed } from "discord.js";
 import { AppConfig } from "../appConfig";
 import { RhobotCommand } from ".";
 import { discordInfoCommand } from "./discordInfo";
+import { LOGGER } from "../logger";
 
 type DiscordMessageHandler = (message: Message) => void;
 
@@ -17,8 +18,6 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
     steamApiKey,
     battlenetClientKey,
     battlenetClientSecret,
-    dynamodbTable,
-    dynamodbRegion,
     commandPrefix,
     enableSC2Command,
     enableSteamCommand,
@@ -36,7 +35,7 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
       Object.keys(COMMANDS)
         .filter((command) => {
           if (!COMMANDS[command]) {
-            console.error("[ERROR] Non-existent command:", command);
+            LOGGER.error("Non-existent command:", command);
             return false;
           }
           return true;
@@ -54,7 +53,7 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
    * we can change our minds here if this proves annoying to users.
    */
   function buildDisabledCommand(commandName: string): RhobotCommand {
-    console.warn("[WARN] Disabling command:", commandName);
+    LOGGER.warn("Disabling command:", commandName);
 
     return {
       run: (message) => {
@@ -104,7 +103,7 @@ export function buildCommandHandler(appConfig: AppConfig): DiscordMessageHandler
       message.reply(
         "[ERROR] Something went wrong with your command. Reach out to the bot admin if these errors continue."
       );
-      console.error(e);
+      LOGGER.error(e);
     }
   };
 }
